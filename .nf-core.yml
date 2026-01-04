@@ -1,0 +1,23 @@
+repository_type: pipeline
+
+nf_core_version: 3.5.1
+
+lint:
+  files_exist:
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+
+template:
+  org: nf-core
+  name: mspepident
+  description: A pipeline for the identification of peptides from mass spectrometry
+    data, integrating multiple search engines and post-processing tools.
+  author: Prof. Julian Uszkoreit, Dirk Winkelhardt, Thulasi Priyadharshini Muruganandam
+  version: 1.0.0dev
+  force: true
+  outdir: .
+  skip_features:
+    - igenomes
+    - fastqc
+    - gpu
+  is_nfcore: true
