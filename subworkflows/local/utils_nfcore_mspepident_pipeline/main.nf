@@ -98,26 +98,31 @@ workflow PIPELINE_INITIALISATION {
 
     channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
-        }
-        .groupTuple()
-        .map { samplesheet ->
-            validateInputSamplesheet(samplesheet)
-        }
-        .map {
-            meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
+        .map { meta, filepath ->
+            def file = file(filepath, checkIfExists: true)
+
+            def new_meta = meta + [
+                ext : file.getExtension().toLowerCase()
+            ]
+            
+            [ new_meta, file ]
         }
         .set { ch_samplesheet }
+        
+    //
+    // Create channel from from the reference protein FASTA provided through params.fasta
+    //
+
+    channel
+    .fromPath(params.fasta, checkIfExists: true)
+    .map { fasta ->
+        [ [ id: fasta.baseName ], fasta ]
+    }
+    .set { ch_fasta }
 
     emit:
     samplesheet = ch_samplesheet
+    fasta       = ch_fasta
     versions    = ch_versions
 }
 
@@ -136,11 +141,11 @@ workflow PIPELINE_COMPLETION {
     outdir          //    path: Path to output directory where results will be published
     monochrome_logs // boolean: Disable ANSI colour codes in log output
     hook_url        //  string: hook URL for notifications
-    multiqc_report  //  string: Path to MultiQC report
+    // multiqc_report  //  string: Path to MultiQC report
 
     main:
     summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
-    def multiqc_reports = multiqc_report.toList()
+    // def multiqc_reports = multiqc_report.toList()
 
     //
     // Completion email and summary
@@ -154,7 +159,7 @@ workflow PIPELINE_COMPLETION {
                 plaintext_email,
                 outdir,
                 monochrome_logs,
-                multiqc_reports.getVal(),
+                // multiqc_reports.getVal(),
             )
         }
 
@@ -175,7 +180,7 @@ workflow PIPELINE_COMPLETION {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
+/* //
 // Validate channels from input samplesheet
 //
 def validateInputSamplesheet(input) {
@@ -188,7 +193,7 @@ def validateInputSamplesheet(input) {
     }
 
     return [ metas[0], fastqs ]
-}
+} */
 //
 // Generate methods description for MultiQC
 //

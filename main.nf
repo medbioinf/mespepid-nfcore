@@ -31,6 +31,7 @@ workflow NFCORE_MSPEPIDENT {
 
     take:
     samplesheet // channel: samplesheet read in from --input
+    fasta       // channel: reference protein FASTA read in from --fasta used for peptide identification and decoy database generation
 
     main:
 
@@ -38,10 +39,13 @@ workflow NFCORE_MSPEPIDENT {
     // WORKFLOW: Run pipeline
     //
     MSPEPIDENT (
-        samplesheet
+        samplesheet,
+        fasta
     )
-    emit:
-    multiqc_report = MSPEPIDENT.out.multiqc_report // channel: /path/to/multiqc_report.html
+    //
+    //emit:
+    // multiqc_report = MSPEPIDENT.out.multiqc_report // channel: /path/to/multiqc_report.html
+
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -71,7 +75,8 @@ workflow {
     // WORKFLOW: Run main workflow
     //
     NFCORE_MSPEPIDENT (
-        PIPELINE_INITIALISATION.out.samplesheet
+        PIPELINE_INITIALISATION.out.samplesheet,
+        PIPELINE_INITIALISATION.out.fasta
     )
     //
     // SUBWORKFLOW: Run completion tasks
@@ -83,7 +88,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        NFCORE_MSPEPIDENT.out.multiqc_report
+        // NFCORE_MSPEPIDENT.out.multiqc_report
     )
 }
 

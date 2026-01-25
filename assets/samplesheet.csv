@@ -1,3 +1,6 @@
-sample,fastq_1,fastq_2
-SAMPLE_PAIRED_END,/path/to/fastq/files/AEG588A1_S1_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A1_S1_L002_R2_001.fastq.gz
-SAMPLE_SINGLE_END,/path/to/fastq/files/AEG588A4_S4_L003_R1_001.fastq.gz,
+id,sample,filepath
+EXII07043std,EXII07043,/volumes/data/datasets/mspepid_data/ISAs/EXII07043std.raw
+EXII07073std,EXII07073,/volumes/data/datasets/mspepid_data/ISAs/EXII07073std.raw
+EXII07156std,EXII07156,/volumes/data/datasets/mspepid_data/ISAs/EXII07156std.raw
+EXII07174std,EXII07174,/volumes/data/datasets/mspepid_data/ISAs/EXII07174std.raw
+EXII07203std,EXII07203,/volumes/data/datasets/mspepid_data/ISAs/EXII07203std.raw

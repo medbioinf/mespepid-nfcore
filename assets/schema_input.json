@@ -7,27 +7,26 @@
     "items": {
         "type": "object",
         "properties": {
+            "id": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "id must be unique and cannot contain spaces",
+                "meta": ["id"]
+            },
             "sample": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
-                "meta": ["id"]
+                "errorMessage": "sample must be provided and cannot contain spaces",
+                "meta": ["sample"]
             },
-            "fastq_1": {
+            "filepath": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
-            },
-            "fastq_2": {
-                "type": "string",
-                "format": "file-path",
-                "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.(mzML|raw|RAW|d)$",
+                "errorMessage": "Filepath must be provided, cannot contain spaces and must have extension '.mzML', '.raw', '.RAW', or '.d'"
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["id", "sample", "filepath"]
     }
 }

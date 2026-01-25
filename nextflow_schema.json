@@ -10,7 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": ["input", "outdir", "fasta"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -28,6 +28,13 @@
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
+                },
+                "fasta": {
+                    "type": "string",
+                    "description": "Path to the protein FASTA file to use, in UniProt header format.",
+                    "format": "file-path",
+                    "mimetype": "text/fasta",
+                    "exists": true
                 },
                 "email": {
                     "type": "string",
