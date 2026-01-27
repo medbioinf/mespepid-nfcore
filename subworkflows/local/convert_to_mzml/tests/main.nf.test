@@ -1,0 +1,73 @@
+nextflow_workflow {
+
+    name "Test Subworkflow CONVERT_TO_MZML"
+    script "../main.nf"
+    workflow "CONVERT_TO_MZML"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "convert_to_mzml"
+
+    test("Test CONVERT_TO_MZML - Thermo RAW") {
+
+        when {
+            workflow {
+                """
+                input[0] = [
+                    [ id:'test', sample:'sample1', ext:'raw' ],
+                    file(params.modules_testdata_base_path + 'proteomics/msdata/sample.raw', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+    }
+
+    test("Test CONVERT_TO_MZML - Bruker timsTOF") {
+
+        when {
+            workflow {
+                """
+                input[0] = [
+                    [ id:'test', sample:'sample1', ext:'d' ],
+                    file(params.modules_testdata_base_path + 'proteomics/msdata/sample.d', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+    }
+
+    test("Test CONVERT_TO_MZML - Mixed input types") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of(
+                    [
+                        [ id:'test1', sample:'sample1', ext:'raw' ],
+                        file(params.modules_testdata_base_path + 'proteomics/msdata/sample1.raw', checkIfExists: true)
+                    ],
+                    [
+                        [ id:'test2', sample:'sample2', ext:'d' ],
+                        file(params.modules_testdata_base_path + 'proteomics/msdata/sample2.d', checkIfExists: true)
+                    ]
+                )
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+    }
+}

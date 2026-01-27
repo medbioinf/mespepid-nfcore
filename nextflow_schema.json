@@ -51,6 +51,11 @@
                     "default": 8,
                     "description": "Number of allowed threads / CPUs for conversion of .d to mzML using tdf2mzml"
                 },
+                "chunk_size": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of MS2 spectra per chunk for parallel processing. Set to 0 to disable chunking."
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",

@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "CONVERT_TO_MZML"
+description: Convert raw mass spectrometry data files to standardized mzML format
+keywords:
+  - mass spectrometry
+  - mzml
+  - conversion
+  - thermo
+  - bruker
+  - raw data
+components:
+  - thermorawfileparser
+  - convertbrukerd
+  - adjustmzml
+input:
+  - ch_samplesheet:
+      type: file
+      description: |
+        Channel containing meta map and raw data file
+        Structure: tuple val(meta), path(raw_file)
+        meta must contain 'ext' field indicating file extension ('raw' or 'd')
+        pattern: "*.{raw,d}"
+output:
+  - mzml:
+      type: file
+      description: |
+        Converted and normalized mzML files
+        Structure: tuple val(meta), path(mzml)
+        pattern: "*.mzML"
+  - versions:
+      type: file
+      description: |
+        File containing software versions
+        pattern: "versions.yml"
+authors:
+  - "@yourusername"
+maintainers:
+  - "@yourusername"

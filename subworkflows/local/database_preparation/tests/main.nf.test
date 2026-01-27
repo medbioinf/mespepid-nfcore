@@ -1,0 +1,44 @@
+nextflow_workflow {
+
+    name "Test Subworkflow DATABASE_PREPARATION"
+    script "../main.nf"
+    workflow "DATABASE_PREPARATION"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "database_preparation"
+
+    test("Test DATABASE_PREPARATION - with entrapment") {
+
+        when {
+            workflow {
+                """
+                input[0] = file(params.modules_testdata_base_path + 'proteomics/database/yeast.fasta', checkIfExists: true)
+                input[1] = 2
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+    }
+
+    test("Test DATABASE_PREPARATION - without entrapment") {
+
+        when {
+            workflow {
+                """
+                input[0] = file(params.modules_testdata_base_path + 'proteomics/database/yeast.fasta', checkIfExists: true)
+                input[1] = null
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+    }
+}

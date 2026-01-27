@@ -1,0 +1,50 @@
+nextflow_workflow {
+
+    name "Test Subworkflow MZML_PROCESSING"
+    script "../main.nf"
+    workflow "MZML_PROCESSING"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "mzml_processing"
+
+    test("Test MZML_PROCESSING - with chunking") {
+
+        when {
+            workflow {
+                """
+                input[0] = [
+                    [ id:'test', sample:'sample1' ],
+                    file(params.modules_testdata_base_path + 'proteomics/msdata/sample.mzML', checkIfExists: true)
+                ]
+                input[1] = 1000
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+    }
+
+    test("Test MZML_PROCESSING - without chunking") {
+
+        when {
+            workflow {
+                """
+                input[0] = [
+                    [ id:'test', sample:'sample1' ],
+                    file(params.modules_testdata_base_path + 'proteomics/msdata/sample.mzML', checkIfExists: true)
+                ]
+                input[1] = 0
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+    }
+}

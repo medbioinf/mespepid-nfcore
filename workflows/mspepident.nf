@@ -11,6 +11,15 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mspe
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT LOCAL SUBWORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+include { CONVERT_TO_MZML       } from '../subworkflows/local/convert_to_mzml/main'
+include { DATABASE_PREPARATION  } from '../subworkflows/local/database_preparation/main'
+include { MZML_PROCESSING       } from '../subworkflows/local/mzml_processing/main'
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -25,6 +34,37 @@ workflow MSPEPIDENT {
 
     ch_versions = channel.empty()
     // ch_multiqc_files = channel.empty()
+
+    //
+    // SUBWORKFLOW: Convert raw data to mzML format
+    //
+    CONVERT_TO_MZML(ch_samplesheet)
+    ch_versions = ch_versions.mix(CONVERT_TO_MZML.out.versions)
+
+    //
+    // SUBWORKFLOW: Prepare protein database with entrapment and decoy sequences
+    //
+    DATABASE_PREPARATION(
+        ch_fasta,
+        params.entrapment_fold ?: null
+    )
+    ch_versions = ch_versions.mix(DATABASE_PREPARATION.out.versions)
+
+    //
+    // SUBWORKFLOW: Process mzML files (optional chunking for parallel processing)
+    //
+    MZML_PROCESSING(
+        CONVERT_TO_MZML.out.mzml,
+        params.chunk_size ?: 0
+    )
+    ch_versions = ch_versions.mix(MZML_PROCESSING.out.versions)
+
+    // TODO: Add peptide search and downstream analysis subworkflows here
+    // Example:
+    // PEPTIDE_SEARCH(
+    //     MZML_PROCESSING.out.mzml,
+    //     DATABASE_PREPARATION.out.fasta_with_decoys
+    // )
 
     //
     // Collate and save software versions
