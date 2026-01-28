@@ -19,6 +19,7 @@ include { DATABASE_PREPARATION     } from '../subworkflows/local/database_prepar
 include { MZML_PROCESSING          } from '../subworkflows/local/mzml_processing/main'
 include { COMET_IDENTIFICATION     } from '../subworkflows/local/comet_identification/main'
 include { MAXQUANT_IDENTIFICATION  } from '../subworkflows/local/maxquant_identification/main'
+include { MSAMANDA_IDENTIFICATION  } from '../subworkflows/local/msamanda_identification/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,6 +95,23 @@ workflow MSPEPIDENT {
             params.precursor_tol_ppm
         )
         ch_versions = ch_versions.mix(MAXQUANT_IDENTIFICATION.out.versions)
+    }
+
+    //
+    // SUBWORKFLOW: MSAmanda peptide identification
+    //
+    if (params.execute_msamanda) {
+        // Create channel for MSAmanda parameters file
+        ch_msamanda_params = channel.fromPath(params.msamanda_params_file, checkIfExists: true)
+        
+        MSAMANDA_IDENTIFICATION(
+            MZML_PROCESSING.out.mzml,
+            DATABASE_PREPARATION.out.fasta_with_decoys.map { meta, fasta -> fasta },
+            ch_msamanda_params,
+            params.precursor_tol_ppm,
+            params.fragment_tol_da
+        )
+        ch_versions = ch_versions.mix(MSAMANDA_IDENTIFICATION.out.versions)
     }
 
     //

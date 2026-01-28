@@ -86,6 +86,16 @@
                     "description": "Path to the MaxQuant parameter file for peptide identification.",
                     "format": "file-path"
                 },
+                "execute_msamanda": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute peptide identification with MSAmanda search engine."
+                },
+                "msamanda_params_file": {
+                    "type": "string",
+                    "description": "Path to the MSAmanda parameter file for peptide identification.",
+                    "format": "file-path"
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",
