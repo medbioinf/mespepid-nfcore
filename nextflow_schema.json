@@ -76,6 +76,16 @@
                     "default": 0.02,
                     "description": "Fragment mass tolerance in Dalton for peptide identification."
                 },
+                "execute_maxquant": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute peptide identification with MaxQuant search engine."
+                },
+                "maxquant_params_file": {
+                    "type": "string",
+                    "description": "Path to the MaxQuant parameter file for peptide identification.",
+                    "format": "file-path"
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",

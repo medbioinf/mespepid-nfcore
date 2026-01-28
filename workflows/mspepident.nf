@@ -14,10 +14,11 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mspe
     IMPORT LOCAL SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { CONVERT_TO_MZML       } from '../subworkflows/local/convert_to_mzml/main'
-include { DATABASE_PREPARATION  } from '../subworkflows/local/database_preparation/main'
-include { MZML_PROCESSING       } from '../subworkflows/local/mzml_processing/main'
-include { COMET_IDENTIFICATION  } from '../subworkflows/local/comet_identification/main'
+include { CONVERT_TO_MZML          } from '../subworkflows/local/convert_to_mzml/main'
+include { DATABASE_PREPARATION     } from '../subworkflows/local/database_preparation/main'
+include { MZML_PROCESSING          } from '../subworkflows/local/mzml_processing/main'
+include { COMET_IDENTIFICATION     } from '../subworkflows/local/comet_identification/main'
+include { MAXQUANT_IDENTIFICATION  } from '../subworkflows/local/maxquant_identification/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -76,6 +77,23 @@ workflow MSPEPIDENT {
             params.fragment_tol_da
         )
         ch_versions = ch_versions.mix(COMET_IDENTIFICATION.out.versions)
+    }
+
+    //
+    // SUBWORKFLOW: MaxQuant peptide identification
+    //
+    if (params.execute_maxquant) {
+        // Create channel for MaxQuant parameters file
+        ch_maxquant_params = channel.fromPath(params.maxquant_params_file, checkIfExists: true)
+            .map { file -> [[id: 'maxquant_params'], file] }
+        
+        MAXQUANT_IDENTIFICATION(
+            ch_samplesheet,
+            DATABASE_PREPARATION.out.fasta_with_decoys,
+            ch_maxquant_params,
+            params.precursor_tol_ppm
+        )
+        ch_versions = ch_versions.mix(MAXQUANT_IDENTIFICATION.out.versions)
     }
 
     //

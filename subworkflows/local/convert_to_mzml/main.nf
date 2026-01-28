@@ -21,11 +21,11 @@ workflow CONVERT_TO_MZML {
 
             // timsTOF (.d)
             d : meta.ext == 'd'
-                return [ meta.subMap('id', 'sample'), file ]
+                return [ meta, file ]
 
             // Thermo RAW (.raw)
             raw : meta.ext == 'raw'
-                return [ meta.subMap('id', 'sample'), file ]
+                return [ meta, file ]
 
             // Catch-all
             other : true
