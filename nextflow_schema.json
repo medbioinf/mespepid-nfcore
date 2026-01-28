@@ -96,6 +96,16 @@
                     "description": "Path to the MSAmanda parameter file for peptide identification.",
                     "format": "file-path"
                 },
+                "execute_msfragger": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute peptide identification with MSFragger search engine."
+                },
+                "msfragger_params_file": {
+                    "type": "string",
+                    "description": "Path to the MSFragger parameter file for peptide identification.",
+                    "format": "file-path"
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",
