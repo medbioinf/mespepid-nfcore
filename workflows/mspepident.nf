@@ -17,6 +17,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mspe
 include { CONVERT_TO_MZML       } from '../subworkflows/local/convert_to_mzml/main'
 include { DATABASE_PREPARATION  } from '../subworkflows/local/database_preparation/main'
 include { MZML_PROCESSING       } from '../subworkflows/local/mzml_processing/main'
+include { COMET_IDENTIFICATION  } from '../subworkflows/local/comet_identification/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,16 +56,27 @@ workflow MSPEPIDENT {
     //
     MZML_PROCESSING(
         CONVERT_TO_MZML.out.mzml,
-        params.chunk_size ?: 0
+        params.chunk_size
     )
     ch_versions = ch_versions.mix(MZML_PROCESSING.out.versions)
 
-    // TODO: Add peptide search and downstream analysis subworkflows here
-    // Example:
-    // PEPTIDE_SEARCH(
-    //     MZML_PROCESSING.out.mzml,
-    //     DATABASE_PREPARATION.out.fasta_with_decoys
-    // )
+    //
+    // SUBWORKFLOW: Comet peptide identification
+    //
+    if (params.execute_comet) {
+        // Create channel for Comet parameters file
+        ch_comet_params = channel.fromPath(params.comet_params_file, checkIfExists: true)
+            .map { file -> [[id: 'comet_params'], file] }
+        
+        COMET_IDENTIFICATION(
+            MZML_PROCESSING.out.mzml,
+            DATABASE_PREPARATION.out.fasta_with_decoys,
+            ch_comet_params,
+            params.precursor_tol_ppm,
+            params.fragment_tol_da
+        )
+        ch_versions = ch_versions.mix(COMET_IDENTIFICATION.out.versions)
+    }
 
     //
     // Collate and save software versions

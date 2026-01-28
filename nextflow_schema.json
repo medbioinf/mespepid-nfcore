@@ -56,6 +56,26 @@
                     "default": 0,
                     "description": "Number of MS2 spectra per chunk for parallel processing. Set to 0 to disable chunking."
                 },
+                "execute_comet": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute peptide identification with Comet search engine."
+                },
+                "comet_params_file": {
+                    "type": "string",
+                    "description": "Path to the Comet parameter file for peptide identification.",
+                    "format": "file-path"
+                },
+                "precursor_tol_ppm": {
+                    "type": "number",
+                    "default": 10,
+                    "description": "Precursor mass tolerance in ppm for peptide identification."
+                },
+                "fragment_tol_da": {
+                    "type": "number",
+                    "default": 0.02,
+                    "description": "Fragment mass tolerance in Dalton for peptide identification."
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",
