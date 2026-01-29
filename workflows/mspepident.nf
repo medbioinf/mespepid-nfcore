@@ -22,6 +22,10 @@ include { MAXQUANT_IDENTIFICATION  } from '../subworkflows/local/maxquant_identi
 include { MSAMANDA_IDENTIFICATION  } from '../subworkflows/local/msamanda_identification/main'
 include { MSFRAGGER_IDENTIFICATION } from '../subworkflows/local/msfragger_identification/main'
 include { MSGFPLUS_IDENTIFICATION  } from '../subworkflows/local/msgfplus_identification/main'
+include { SAGE_IDENTIFICATION      } from '../subworkflows/local/sage_identification/main'
+include { XTANDEM_IDENTIFICATION   } from '../subworkflows/local/xtandem_identification/main'
+include { CONVERT_AND_ENHANCE_PSM_TSV } from '../subworkflows/local/convert_and_enhance_psm_tsv/main'
+include { PERCOLATOR_RESCORING     } from '../subworkflows/local/percolator_rescoring/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -149,6 +153,154 @@ workflow MSPEPIDENT {
             params.msgfplus_split_input
         )
         ch_versions = ch_versions.mix(MSGFPLUS_IDENTIFICATION.out.versions)
+    }
+
+    //
+    // SUBWORKFLOW: Sage peptide identification
+    //
+    if (params.execute_sage) {
+        // Create channel for Sage config file
+        ch_sage_config = channel.fromPath(params.sage_config_file, checkIfExists: true)
+        
+        SAGE_IDENTIFICATION(
+            ch_sage_config,
+            DATABASE_PREPARATION.out.fasta_with_decoys.map { meta, fasta -> fasta },
+            MZML_PROCESSING.out.mzml,
+            params.precursor_tol_ppm,
+            params.fragment_tol_da
+        )
+        ch_versions = ch_versions.mix(SAGE_IDENTIFICATION.out.versions)
+    }
+
+    //
+    // SUBWORKFLOW: X!Tandem peptide identification
+    //
+    if (params.execute_xtandem) {
+        // Create channel for X!Tandem config file
+        ch_xtandem_config = channel.fromPath(params.xtandem_config_file, checkIfExists: true).first()
+        
+        XTANDEM_IDENTIFICATION(
+            ch_xtandem_config,
+            DATABASE_PREPARATION.out.fasta_with_decoys.map { meta, fasta -> fasta }.first(),
+            MZML_PROCESSING.out.mzml,
+            params.precursor_tol_ppm,
+            params.fragment_tol_da
+        )
+        ch_versions = ch_versions.mix(XTANDEM_IDENTIFICATION.out.versions)
+    }
+
+    //
+    // POSTPROCESSING: Convert raw results and run percolator
+    //
+    if (params.execute_percolator) {
+        ch_versions_percolator = channel.empty()
+
+        // Process Comet results
+        if (params.execute_comet) {
+            CONVERT_AND_ENHANCE_PSM_TSV(
+                COMET_IDENTIFICATION.out.mzid_files.map { meta, mzid -> tuple(meta, mzid, 'mzid') },
+                'comet'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(CONVERT_AND_ENHANCE_PSM_TSV.out.versions)
+            
+            PERCOLATOR_RESCORING(
+                CONVERT_AND_ENHANCE_PSM_TSV.out.pin_file,
+                'comet'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(PERCOLATOR_RESCORING.out.versions)
+        }
+
+        // Process MaxQuant results
+        if (params.execute_maxquant) {
+            CONVERT_AND_ENHANCE_PSM_TSV(
+                MAXQUANT_IDENTIFICATION.out.msms_files.map { meta, msms -> tuple(meta, msms, 'msms') },
+                'maxquant'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(CONVERT_AND_ENHANCE_PSM_TSV.out.versions)
+            
+            PERCOLATOR_RESCORING(
+                CONVERT_AND_ENHANCE_PSM_TSV.out.pin_file,
+                'maxquant'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(PERCOLATOR_RESCORING.out.versions)
+        }
+
+        // Process MSAmanda results
+        if (params.execute_msamanda) {
+            CONVERT_AND_ENHANCE_PSM_TSV(
+                MSAMANDA_IDENTIFICATION.out.csv_files.map { meta, csv -> tuple(meta, csv, 'msamanda') },
+                'msamanda'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(CONVERT_AND_ENHANCE_PSM_TSV.out.versions)
+            
+            PERCOLATOR_RESCORING(
+                CONVERT_AND_ENHANCE_PSM_TSV.out.pin_file,
+                'msamanda'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(PERCOLATOR_RESCORING.out.versions)
+        }
+
+        // Process MSFragger results
+        if (params.execute_msfragger) {
+            CONVERT_AND_ENHANCE_PSM_TSV(
+                MSFRAGGER_IDENTIFICATION.out.pepxml_files.map { meta, pepxml -> tuple(meta, pepxml, 'pepxml') },
+                'msfragger'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(CONVERT_AND_ENHANCE_PSM_TSV.out.versions)
+            
+            PERCOLATOR_RESCORING(
+                CONVERT_AND_ENHANCE_PSM_TSV.out.pin_file,
+                'msfragger'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(PERCOLATOR_RESCORING.out.versions)
+        }
+
+        // Process MS-GF+ results
+        if (params.execute_msgfplus) {
+            CONVERT_AND_ENHANCE_PSM_TSV(
+                MSGFPLUS_IDENTIFICATION.out.mzid_files.map { meta, mzid -> tuple(meta, mzid, 'mzid') },
+                'msgfplus'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(CONVERT_AND_ENHANCE_PSM_TSV.out.versions)
+            
+            PERCOLATOR_RESCORING(
+                CONVERT_AND_ENHANCE_PSM_TSV.out.pin_file,
+                'msgfplus'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(PERCOLATOR_RESCORING.out.versions)
+        }
+
+        // Process Sage results
+        if (params.execute_sage) {
+            CONVERT_AND_ENHANCE_PSM_TSV(
+                SAGE_IDENTIFICATION.out.sage_tsvs.map { meta, tsv -> tuple(meta, tsv, 'sage_tsv') },
+                'sage'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(CONVERT_AND_ENHANCE_PSM_TSV.out.versions)
+            
+            PERCOLATOR_RESCORING(
+                CONVERT_AND_ENHANCE_PSM_TSV.out.pin_file,
+                'sage'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(PERCOLATOR_RESCORING.out.versions)
+        }
+
+        // Process X!Tandem results
+        if (params.execute_xtandem) {
+            CONVERT_AND_ENHANCE_PSM_TSV(
+                XTANDEM_IDENTIFICATION.out.xml_files.map { meta, xml -> tuple(meta, xml, 'xtandem') },
+                'xtandem'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(CONVERT_AND_ENHANCE_PSM_TSV.out.versions)
+            
+            PERCOLATOR_RESCORING(
+                CONVERT_AND_ENHANCE_PSM_TSV.out.pin_file,
+                'xtandem'
+            )
+            ch_versions_percolator = ch_versions_percolator.mix(PERCOLATOR_RESCORING.out.versions)
+        }
+
+        ch_versions = ch_versions.mix(ch_versions_percolator)
     }
 
     //

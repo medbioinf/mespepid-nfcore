@@ -155,6 +155,11 @@
                     "description": "Path to the X!Tandem configuration XML file for peptide identification.",
                     "format": "file-path"
                 },
+                "execute_percolator": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute Percolator for post-processing of PSMs"
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",

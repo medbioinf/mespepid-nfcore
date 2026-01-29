@@ -34,7 +34,7 @@ process PSMS_TO_PIN_AND_ENHANCED_TSV {
 
     output:
     tuple val(meta), path("*.enhanced.tsv"), emit: psm_tsv
-    tuple val(meta), path("*.pin")         , emit: pin_file
+    tuple val(meta), path("*.adjusted.pin"), emit: pin_file
     path "versions.yml"                    , emit: versions
 
     when:
@@ -54,8 +54,11 @@ process PSMS_TO_PIN_AND_ENHANCED_TSV {
         -searchengine ${searchengine} \\
         ${args}
 
+    # Convert CRLF to LF (psm_utils may create Windows line endings)
+    sed -i 's/\\r\$//' ${prefix}.pre.pin
+
     # correct the PIN file by moving the scan number to third column and adding correct SpecId (increasing integer)
-    awk '{FS="\t";OFS="\t"; if (NR>1) { \$3=\$1; \$1=NR-1; gsub(".*=", "", \$3) } print}' ${prefix}.pre.pin > ${prefix}.pin
+    awk '{FS="\\t";OFS="\\t"; if (NR>1) { \$3=\$1; \$1=NR-1; gsub(".*=", "", \$3) } print}' ${prefix}.pre.pin > ${prefix}.pin
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

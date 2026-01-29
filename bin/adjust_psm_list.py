@@ -68,5 +68,22 @@ if __name__ == "__main__":
             # the score is an "expect value", so use its -ln(score)
             psm["score"] = -math.log(float(psm["metadata"]["search_score_expect"]))    # use the search_score_expect here
             del psm["metadata"]["search_score_expect"]                          # ... and remove it from the metadata
+    elif (args.searchengine == "xtandem"):
+        # X!Tandem spectrum_id contains strings like "controllerType=0 controllerNumber=1 scan=414"
+        # We need to extract just the scan number for Percolator compatibility
+        import re
+        for psm in psm_list:
+            if isinstance(psm["spectrum_id"], str):
+                # Extract scan number from spectrum_id string
+                match = re.search(r'scan=(\d+)', psm["spectrum_id"])
+                if match:
+                    psm["spectrum_id"] = int(match.group(1))
+                else:
+                    # Fallback: try to convert to int directly, or use a hash
+                    try:
+                        psm["spectrum_id"] = int(psm["spectrum_id"])
+                    except ValueError:
+                        # If all else fails, use a hash of the string converted to integer
+                        psm["spectrum_id"] = abs(hash(psm["spectrum_id"])) % (10 ** 8)
 
     write_file(psm_list, args.out_file, filetype="tsv") 

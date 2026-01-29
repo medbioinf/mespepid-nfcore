@@ -3,10 +3,9 @@
  * Sage peptide identification workflow
  */
 
-include { SAGE_ADJUST_CONFIG              } from '../../../modules/local/sageadjustconfig/main'
-include { SAGE_SEARCH                    } from '../../../modules/local/sagesearch/main'
-include { SAGE_RESULTS_SEPARATE           } from '../../../modules/local/sageresultsseparate/main'
-include { CONVERT_AND_ENHANCE_PSM_TSV   } from '../convert_and_enhance_psm_tsv/main'
+include { SAGE_ADJUST_CONFIG    } from '../../../modules/local/sageadjustconfig/main'
+include { SAGE_SEARCH          } from '../../../modules/local/sagesearch/main'
+include { SAGE_RESULTS_SEPARATE } from '../../../modules/local/sageresultsseparate/main'
 
 workflow SAGE_IDENTIFICATION {
 
@@ -51,18 +50,10 @@ workflow SAGE_IDENTIFICATION {
         .map { sage_tsv ->
             // Extract mzML filename from sage TSV filename (e.g., "file.mzML.sage.tsv" -> "file")
             def mzml_basename = sage_tsv.name.take(sage_tsv.name.lastIndexOf('.sage.tsv'))
-            tuple([id: mzml_basename], sage_tsv, 'sage_tsv')
+            tuple([id: mzml_basename], sage_tsv)
         }
 
-    // Convert to PSM utils format and enhance
-    CONVERT_AND_ENHANCE_PSM_TSV(
-        ch_sage_tsvs_with_meta,
-        'sage'
-    )
-    ch_versions = ch_versions.mix(CONVERT_AND_ENHANCE_PSM_TSV.out.versions)
-
     emit:
-    psm_tsvs = CONVERT_AND_ENHANCE_PSM_TSV.out.psm_tsv   // channel: tuple(meta, path(enhanced_tsv))
-    pin_files = CONVERT_AND_ENHANCE_PSM_TSV.out.pin_file // channel: tuple(meta, path(pin))
-    versions = ch_versions                                // channel: path(versions.yml)
+    sage_tsvs = ch_sage_tsvs_with_meta  // channel: tuple val(meta), path(sage_tsv)
+    versions  = ch_versions              // channel: path(versions.yml)
 }
