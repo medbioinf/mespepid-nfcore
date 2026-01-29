@@ -27,6 +27,7 @@ include { XTANDEM_IDENTIFICATION   } from '../subworkflows/local/xtandem_identif
 include { CONVERT_AND_ENHANCE_PSM_TSV } from '../subworkflows/local/convert_and_enhance_psm_tsv/main'
 include { PERCOLATOR_RESCORING     } from '../subworkflows/local/percolator_rescoring/main'
 include { MS2RESCORE_RESCORING     } from '../subworkflows/local/ms2rescore_rescoring/main'
+include { OKTOBERFEST_RESCORING    } from '../subworkflows/local/oktoberfest_rescoring/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -192,9 +193,9 @@ workflow MSPEPIDENT {
 
     //
     // POSTPROCESSING: Convert search engine results to PSM utils format
-    // This is done once and used by both Percolator and MS2Rescore if enabled
+    // This is done once and used by Percolator, MS2Rescore, and Oktoberfest if enabled
     //
-    if (params.execute_percolator || params.execute_ms2rescore) {
+    if (params.execute_percolator || params.execute_ms2rescore || params.execute_oktoberfest) {
         
         // Storage for converted PSM files
         ch_comet_psm_tsv = channel.empty()
@@ -481,6 +482,134 @@ workflow MSPEPIDENT {
         }
 
         ch_versions = ch_versions.mix(ch_versions_ms2rescore)
+    }
+
+    //
+    // POSTPROCESSING: Run Oktoberfest on converted results
+    //
+    if (params.execute_oktoberfest) {
+        ch_versions_oktoberfest = channel.empty()
+
+        // Run Oktoberfest on Comet results
+        if (params.execute_comet) {
+            ch_comet_oktoberfest_input = ch_comet_psm_tsv
+                .combine(MZML_PROCESSING.out.mzml, by: 0)
+                .map { meta, psm_tsv, mzml -> [meta, psm_tsv, mzml] }
+            
+            OKTOBERFEST_RESCORING(
+                ch_comet_oktoberfest_input,
+                'comet',
+                params.comet_scan_id_pattern,
+                params.fragment_tol_da,
+                params.oktoberfest_intensity_model,
+                params.oktoberfest_irt_model
+            )
+            ch_versions_oktoberfest = ch_versions_oktoberfest.mix(OKTOBERFEST_RESCORING.out.versions)
+        }
+
+        // Run Oktoberfest on MaxQuant results
+        if (params.execute_maxquant) {
+            ch_maxquant_oktoberfest_input = ch_maxquant_psm_tsv
+                .combine(MZML_PROCESSING.out.mzml, by: 0)
+                .map { meta, psm_tsv, mzml -> [meta, psm_tsv, mzml] }
+            
+            OKTOBERFEST_RESCORING(
+                ch_maxquant_oktoberfest_input,
+                'maxquant',
+                params.maxquant_scan_id_pattern,
+                params.fragment_tol_da,
+                params.oktoberfest_intensity_model,
+                params.oktoberfest_irt_model
+            )
+            ch_versions_oktoberfest = ch_versions_oktoberfest.mix(OKTOBERFEST_RESCORING.out.versions)
+        }
+
+        // Run Oktoberfest on MSAmanda results
+        if (params.execute_msamanda) {
+            ch_msamanda_oktoberfest_input = ch_msamanda_psm_tsv
+                .combine(MZML_PROCESSING.out.mzml, by: 0)
+                .map { meta, psm_tsv, mzml -> [meta, psm_tsv, mzml] }
+            
+            OKTOBERFEST_RESCORING(
+                ch_msamanda_oktoberfest_input,
+                'msamanda',
+                params.msamanda_scan_id_pattern,
+                params.fragment_tol_da,
+                params.oktoberfest_intensity_model,
+                params.oktoberfest_irt_model
+            )
+            ch_versions_oktoberfest = ch_versions_oktoberfest.mix(OKTOBERFEST_RESCORING.out.versions)
+        }
+
+        // Run Oktoberfest on MSFragger results
+        if (params.execute_msfragger) {
+            ch_msfragger_oktoberfest_input = ch_msfragger_psm_tsv
+                .combine(MZML_PROCESSING.out.mzml, by: 0)
+                .map { meta, psm_tsv, mzml -> [meta, psm_tsv, mzml] }
+            
+            OKTOBERFEST_RESCORING(
+                ch_msfragger_oktoberfest_input,
+                'msfragger',
+                params.msfragger_scan_id_pattern,
+                params.fragment_tol_da,
+                params.oktoberfest_intensity_model,
+                params.oktoberfest_irt_model
+            )
+            ch_versions_oktoberfest = ch_versions_oktoberfest.mix(OKTOBERFEST_RESCORING.out.versions)
+        }
+
+        // Run Oktoberfest on MS-GF+ results
+        if (params.execute_msgfplus) {
+            ch_msgfplus_oktoberfest_input = ch_msgfplus_psm_tsv
+                .combine(MZML_PROCESSING.out.mzml, by: 0)
+                .map { meta, psm_tsv, mzml -> [meta, psm_tsv, mzml] }
+            
+            OKTOBERFEST_RESCORING(
+                ch_msgfplus_oktoberfest_input,
+                'msgfplus',
+                params.msgfplus_scan_id_pattern,
+                params.fragment_tol_da,
+                params.oktoberfest_intensity_model,
+                params.oktoberfest_irt_model
+            )
+            ch_versions_oktoberfest = ch_versions_oktoberfest.mix(OKTOBERFEST_RESCORING.out.versions)
+        }
+
+        // Run Oktoberfest on Sage results
+        if (params.execute_sage) {
+            ch_sage_oktoberfest_input = ch_sage_psm_tsv
+                .combine(MZML_PROCESSING.out.mzml, by: 0)
+                .map { meta, psm_tsv, mzml -> [meta, psm_tsv, mzml] }
+            
+            OKTOBERFEST_RESCORING(
+                ch_sage_oktoberfest_input,
+                'sage',
+                params.sage_scan_id_pattern,
+                params.fragment_tol_da,
+                params.oktoberfest_intensity_model,
+                params.oktoberfest_irt_model
+            )
+            ch_versions_oktoberfest = ch_versions_oktoberfest.mix(OKTOBERFEST_RESCORING.out.versions)
+        }
+
+        // Run Oktoberfest on X!Tandem results
+        if (params.execute_xtandem) {
+            ch_xtandem_oktoberfest_input = ch_xtandem_psm_tsv
+                .combine(MZML_PROCESSING.out.mzml, by: 0)
+                .map { meta, psm_tsv, mzml -> [meta, psm_tsv, mzml] }
+            
+            OKTOBERFEST_RESCORING(
+                ch_xtandem_oktoberfest_input,
+                'xtandem',
+                params.xtandem_scan_id_pattern,
+                params.fragment_tol_da,
+                params.oktoberfest_intensity_model,
+                params.oktoberfest_irt_model
+            )
+            ch_versions_oktoberfest = ch_versions_oktoberfest.mix(OKTOBERFEST_RESCORING.out.versions)
+        }
+
+        ch_versions = ch_versions.mix(ch_versions_oktoberfest)
     }
 
     //
