@@ -106,6 +106,26 @@
                     "description": "Path to the MSFragger parameter file for peptide identification.",
                     "format": "file-path"
                 },
+                "execute_msgfplus": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute peptide identification with MS-GF+ search engine."
+                },
+                "msgfplus_params_file": {
+                    "type": "string",
+                    "description": "Path to the MS-GF+ parameter file for peptide identification.",
+                    "format": "file-path"
+                },
+                "msgfplus_split_fasta": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of FASTA splits for parallel MS-GF+ processing. Set to 0 to disable FASTA splitting."
+                },
+                "msgfplus_split_input": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of mzML splits for parallel MS-GF+ processing. Set to 0 to disable mzML splitting."
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",

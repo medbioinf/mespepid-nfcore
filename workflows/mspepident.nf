@@ -21,6 +21,7 @@ include { COMET_IDENTIFICATION     } from '../subworkflows/local/comet_identific
 include { MAXQUANT_IDENTIFICATION  } from '../subworkflows/local/maxquant_identification/main'
 include { MSAMANDA_IDENTIFICATION  } from '../subworkflows/local/msamanda_identification/main'
 include { MSFRAGGER_IDENTIFICATION } from '../subworkflows/local/msfragger_identification/main'
+include { MSGFPLUS_IDENTIFICATION  } from '../subworkflows/local/msgfplus_identification/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,6 +131,24 @@ workflow MSPEPIDENT {
             params.fragment_tol_da
         )
         ch_versions = ch_versions.mix(MSFRAGGER_IDENTIFICATION.out.versions)
+    }
+
+    //
+    // SUBWORKFLOW: MS-GF+ peptide identification
+    //
+    if (params.execute_msgfplus) {
+        // Create channel for MS-GF+ parameters file
+        ch_msgfplus_params = channel.fromPath(params.msgfplus_params_file, checkIfExists: true)
+        
+        MSGFPLUS_IDENTIFICATION(
+            ch_msgfplus_params,
+            DATABASE_PREPARATION.out.fasta_with_decoys.map { meta, fasta -> fasta },
+            MZML_PROCESSING.out.mzml,
+            params.precursor_tol_ppm,
+            params.msgfplus_split_fasta,
+            params.msgfplus_split_input
+        )
+        ch_versions = ch_versions.mix(MSGFPLUS_IDENTIFICATION.out.versions)
     }
 
     //
