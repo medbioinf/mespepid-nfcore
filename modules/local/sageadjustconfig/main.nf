@@ -15,69 +15,70 @@
 // TODO nf-core: Optional inputs are not currently supported by Nextflow. However, using an empty
 //               list (`[]`) instead of a file can be used to work around this issue.
 
-process MSGFPLUS_SEARCH {
-    tag "$meta.id"
-    label 'process_medium'
-    label 'msgfplus_image'
+// Original file: mspepid/src/identification/sage_identification.nf (adjust_sage_config)
+process SAGE_ADJUST_CONFIG {
+    tag "${default_config_file.baseName}"
+    label 'process_low'
+    label 'python_image'
 
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE':
         'biocontainers/YOUR-TOOL-HERE' }"
-        
+
     input:
-    tuple val(meta), path(msgfplus_params), path(mzml), path(fasta), path(canno), path(cnlcp), path(csarr), path(cseq), val(precursor_tol_ppm)
+    path default_config_file
+    val precursor_tol_ppm
+    val fragment_tol_da
 
     output:
-    tuple val(meta), path("${mzml.baseName}*.mzid"), emit: mzid
-    path "versions.yml"                             , emit: versions
+    path "adjusted_sage_config.json", emit: config
+    path "versions.yml"              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def instrument = task.ext.instrument ?: '0'
-    def threads = task.cpus
-    def tasks_param = task.ext.tasks ?: threads
-    def mem_gb = task.memory ? task.memory.toGiga() : 8
+    def prefilter_chunk_size = task.ext.prefilter_chunk_size ?: 100000
+    def prefilter = task.ext.prefilter != null ? task.ext.prefilter : true
     
     """
-    cp ${msgfplus_params} adjusted_MSGFPlus_Params.txt
-    sed -i 's;^PrecursorMassTolerance=.*;PrecursorMassTolerance=${precursor_tol_ppm};' adjusted_MSGFPlus_Params.txt
-    sed -i 's;^InstrumentID=.*;InstrumentID=${instrument};' adjusted_MSGFPlus_Params.txt
+    python <<CODE
+import json
 
-    java -Xmx${mem_gb}G -jar /opt/msgfplus/MSGFPlus.jar \\
-        -conf adjusted_MSGFPlus_Params.txt \\
-        -s ${mzml} \\
-        -d ${fasta} \\
-        -thread ${threads} \\
-        -tasks ${tasks_param} \\
-        -o ${mzml.baseName}.mzid \\
-        ${args}
+# Opening JSON file
+with open("${default_config_file}", 'r') as openfile:
+    # Reading from json file
+    json_object = json.load(openfile)
 
-    if [[ ${fasta} == *"-split"* ]]; then
-        splitnum=\$(echo "${fasta}" | sed "s;.*-split-\\([0-9]*\\).fasta;\\1;")
-        echo "renaming ${mzml.baseName}.mzid to ${mzml.baseName}-split-\${splitnum}.mzid"
-        mv ${mzml.baseName}.mzid ${mzml.baseName}-split-\${splitnum}.mzid
-    fi
+# adjust the tolerances
+json_object["precursor_tol"] = {'ppm': [-${precursor_tol_ppm}, ${precursor_tol_ppm}]}
+json_object["fragment_tol"] = {'da': [-${fragment_tol_da}, ${fragment_tol_da}]}
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        msgfplus: \$(java -jar /opt/msgfplus/MSGFPlus.jar 2>&1 | grep -oP 'MS-GF\\+ \\(v\\K[0-9.]+' || echo "unknown")
-    END_VERSIONS
+# adjust database prefilter
+json_object["database"]["prefilter_chunk_size"] = ${prefilter_chunk_size}
+json_object["database"]["prefilter"] = (str("${prefilter}").strip().lower() == "true")
+json_object["database"]["prefilter_low_memory"] = False
+
+# Writing to adjusted_sage_config.json
+with open("./adjusted_sage_config.json", "w") as outfile:
+    json.dump(json_object, outfile)
+CODE
+
+cat <<-END_VERSIONS > versions.yml
+"${task.process}":
+    python: \$(python --version 2>&1 | sed 's/Python //g')
+END_VERSIONS
     """
 
     stub:
-    def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.mzid
+    touch adjusted_sage_config.json
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        msgfplus: unknown
-    END_VERSIONS
+cat <<-END_VERSIONS > versions.yml
+"${task.process}":
+    python: \$(python --version 2>&1 | sed 's/Python //g')
+END_VERSIONS
     """
 }

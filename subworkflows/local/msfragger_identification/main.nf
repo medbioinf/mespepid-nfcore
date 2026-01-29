@@ -15,7 +15,7 @@ workflow MSFRAGGER_IDENTIFICATION {
     fragment_tol_da      // val: fragment mass tolerance in Da
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     // Create a meta map for the params file and adjust parameters
     ch_msfragger_params

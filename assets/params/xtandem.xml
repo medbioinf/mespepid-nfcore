@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="tandem-input-style.xsl"?>
+<bioml>
+  <note type="input" label="spectrum, path">[inputfile.mzML]</note>
+  <note type="input" label="output, path">[outputfile.xtandem_identification.t.xml]</note>
+  <note type="input" label="output, path hashing">no</note>
+  <note type="input" label="list path, taxonomy information">[xtandem_taxonomy.xml]</note>
+  <note type="input" label="protein, taxon">sample_species</note>
+  <note type="input" label="spectrum, fragment monoisotopic mass error">0.02</note>
+  <note type="input" label="spectrum, fragment monoisotopic mass error units">Daltons</note>
+  <note type="input" label="spectrum, fragment mass type">monoisotopic</note>
+  <note type="input" label="spectrum, parent monoisotopic mass error minus">10.0</note>
+  <note type="input" label="spectrum, parent monoisotopic mass error plus">10.0</note>
+  <note type="input" label="spectrum, parent monoisotopic mass error units">ppm</note>
+  <note type="input" label="spectrum, parent monoisotopic mass isotope error">yes</note>
+  <note type="input" label="spectrum, maximum parent charge">4</note>
+  <note type="input" label="residue, modification mass">57.021464@C</note>
+  <note type="input" label="residue, potential modification mass">15.994915@M</note>
+  <note type="input" label="protein, quick acetyl">no</note>
+  <note type="input" label="protein, quick pyrolidone">no</note>
+  <note type="input" label="scoring, maximum missed cleavage sites">2</note>
+  <note type="input" label="protein, cleavage site">[KR]|{P}</note>
+  <note type="input" label="protein, cleavage semi">no</note>
+  <note type="input" label="spectrum, threads">16</note>
+  <note type="input" label="output, maximum valid expectation value">0.1</note>
+  <note type="input" label="output, parameters">yes</note>
+  <note type="input" label="output, proteins">yes</note>
+  <note type="input" label="output, results">all</note>
+  <note type="input" label="output, sort results by">spectrum</note>
+  <note type="input" label="output, spectra">yes</note>
+  <note type="input" label="output, xsl path">tandem-style.xsl</note>
+  <note type="input" label="protein, use minimal annotations">yes</note>
+  <note type="input" label="scoring, pluggable scoring">no</note>
+</bioml>

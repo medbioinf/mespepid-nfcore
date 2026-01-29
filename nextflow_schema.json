@@ -126,6 +126,35 @@
                     "default": 0,
                     "description": "Number of mzML splits for parallel MS-GF+ processing. Set to 0 to disable mzML splitting."
                 },
+                "execute_sage": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute peptide identification with Sage search engine."
+                },
+                "sage_config_file": {
+                    "type": "string",
+                    "description": "Path to the Sage configuration JSON file for peptide identification.",
+                    "format": "file-path"
+                },
+                "sage_prefilter": {
+                    "type": "boolean",
+                    "description": "Whether the database should be split during Sage search. This greatly reduces the memory consumption on when using large databases (beta feature)"
+                },
+                "sage_prefilter_chunk_size": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of proteins per database chunk when prefiltering is active."
+                },
+                "execute_xtandem": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute peptide identification with X!Tandem search engine."
+                },
+                "xtandem_config_file": {
+                    "type": "string",
+                    "description": "Path to the X!Tandem configuration XML file for peptide identification.",
+                    "format": "file-path"
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",
