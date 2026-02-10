@@ -2,7 +2,7 @@
     Prepare protein database for peptide identification
 */
 
-include { CALLENTRAPMENTDATABASE } from '../../../modules/local/callentrapmentdatabase/main.nf'
+include { CALL_ENTRAPMENT_DATABASE } from '../../../modules/local/callentrapmentdatabase/main.nf'
 include { OPENMS_DECOYDATABASE   } from '../../../modules/nf-core/openms/decoydatabase/main.nf'
 
 workflow DATABASE_PREPARATION {
@@ -21,15 +21,15 @@ workflow DATABASE_PREPARATION {
             .map { meta, fasta -> fasta }
             .set { ch_fasta_only }
         
-        CALLENTRAPMENTDATABASE(ch_fasta_only, fold)
+        CALL_ENTRAPMENT_DATABASE(ch_fasta_only, fold)
         
         // Add meta map back to output
         ch_fasta
             .map { meta, fasta -> meta }
-            .combine(CALLENTRAPMENTDATABASE.out.fasta)
+            .combine(CALL_ENTRAPMENT_DATABASE.out.fasta)
             .set { ch_fasta_for_decoy }
         
-        ch_versions = ch_versions.mix(CALLENTRAPMENTDATABASE.out.versions)
+        ch_versions = ch_versions.mix(CALL_ENTRAPMENT_DATABASE.out.versions)
     } else {
         // Pass through with existing meta
         ch_fasta_for_decoy = ch_fasta

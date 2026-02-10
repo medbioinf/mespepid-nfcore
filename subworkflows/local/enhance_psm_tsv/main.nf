@@ -3,8 +3,8 @@
  * Enhances PSM TSV files and creates PIN files for Percolator
  */
 
-include { ADJUST_PSM_LIST              } from '../../../modules/local/adjustpsmlist/main'
-include { PSMS_TO_PIN_AND_ENHANCED_TSV    } from '../../../modules/local/psmstopinandenhancedtsv/main'
+include { ADJUST_PSM_LIST              } from '../../../modules/local/adjustpsmlist/main.nf'
+include { PSMS_TO_PIN_AND_ENHANCED_TSV    } from '../../../modules/local/psmstopinandenhancedtsv/main.nf'
 
 workflow ENHANCE_PSM_TSV {
 

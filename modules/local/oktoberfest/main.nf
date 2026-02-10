@@ -1,10 +1,14 @@
 process OKTOBERFEST {
-    tag "${meta.id}"
+    tag "$meta.id"
     label 'process_high'
     label 'oktoberfest_image'
 
-    publishDir "${params.outdir}/oktoberfest/${searchengine}", mode: params.publish_dir_mode
-
+    // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
+    conda "${moduleDir}/environment.yml"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE':
+        'biocontainers/YOUR-TOOL-HERE' }"
+    
     input:
     tuple val(meta), path(psm_tsv), path(spectra_file)
     val searchengine

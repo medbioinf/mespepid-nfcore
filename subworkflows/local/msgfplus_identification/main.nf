@@ -2,12 +2,12 @@
  * MS-GF+ identification workflow
  */
 
-include { MSGFPLUS_SPLIT_FASTA         } from '../../../modules/local/msgfplussplitfasta/main'
-include { MSGFPLUS_BUILD_INDEX         } from '../../../modules/local/msgfplusbuildindex/main'
-include { MSGFPLUS_SEARCH             } from '../../../modules/local/msgfplussearch/main'
-include { MSGFPLUS_MZID_MERGER         } from '../../../modules/local/msgfplusmzidmerger/main'
-include { MSGFPLUS_MERGE_PSMS          } from '../../../modules/local/msgfplusmergepsms/main'
-include { CONVERT_TO_PSM_UTILS       } from '../../../modules/local/converttopsmutils/main'
+include { MSGFPLUS_SPLIT_FASTA         } from '../../../modules/local/msgfplussplitfasta/main.nf'
+include { MSGFPLUS_BUILD_INDEX         } from '../../../modules/local/msgfplusbuildindex/main.nf'
+include { MSGFPLUS_SEARCH             } from '../../../modules/local/msgfplussearch/main.nf'
+include { MSGFPLUS_MZID_MERGER         } from '../../../modules/local/msgfplusmzidmerger/main.nf'
+include { MSGFPLUS_MERGE_PSMS          } from '../../../modules/local/msgfplusmergepsms/main.nf'
+include { CONVERT_TO_PSM_UTILS       } from '../../../modules/local/converttopsmutils/main.nf'
 
 workflow MSGFPLUS_IDENTIFICATION {
 

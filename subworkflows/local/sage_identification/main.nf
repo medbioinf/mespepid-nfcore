@@ -3,9 +3,9 @@
  * Sage peptide identification workflow
  */
 
-include { SAGE_ADJUST_CONFIG    } from '../../../modules/local/sageadjustconfig/main'
-include { SAGE_SEARCH          } from '../../../modules/local/sagesearch/main'
-include { SAGE_RESULTS_SEPARATE } from '../../../modules/local/sageresultsseparate/main'
+include { SAGE_ADJUST_CONFIG    } from '../../../modules/local/sageadjustconfig/main.nf'
+include { SAGE_SEARCH          } from '../../../modules/local/sagesearch/main.nf'
+include { SAGE_RESULTS_SEPARATE } from '../../../modules/local/sageresultsseparate/main.nf'
 
 workflow SAGE_IDENTIFICATION {
 

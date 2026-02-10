@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+# # TODO nf-core: Add a description of the module and list keywords
+name: "percolator"
+description: write your description here
+keywords:
+  - sort
+  - example
+  - genomics
+tools:
+  ## TODO nf-core: Add a description and other details for the software below
+  - "percolator":
+      description: "Semi-supervised learning for peptide identification from shotgun
+        proteomics datasets."
+      homepage: "http://percolator.ms"
+      documentation: "http://percolator.ms"
+      tool_dev_url: "https://github.com/percolator/percolator"
+      doi: ""
+      licence: ["Apache-2.0"]
+      identifier: biotools:percolator
+
+input:
+  # TODO nf-core: Update the information obtained from bio.tools and make sure that it is correct
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information. e.g. `[
+          id:'sample1' ]`
+    - peptide_identification:
+        type: file
+        description: peptide_identification file
+        pattern: "*.{xml}"
+        ontologies:
+          - edam: http://edamontology.org/data_0945 # Peptide identification
+          - edam: http://edamontology.org/format_2332 # XML
+output:
+  # TODO nf-core: Update the information obtained from bio.tools and make sure that it is correct
+  peptide_identification:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.{xml}":
+          type: file
+          description: peptide_identification file
+          pattern: "*.{xml}"
+          ontologies:
+            - edam: http://edamontology.org/data_0945 # Peptide identification
+            - edam: http://edamontology.org/format_2332 # XML
+  versions_percolator:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - percolator:
+          type: string
+          description: The name of the tool
+      - percolator --version:
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - percolator:
+          type: string
+          description: The name of the tool
+      - percolator --version:
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@medbioinf"
+maintainers:
+  - "@medbioinf"

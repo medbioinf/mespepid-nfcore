@@ -15,6 +15,9 @@ process CONVERT_BRUKER_D {
     tuple val(meta), path("*.mzML"), emit: mzml
     path "versions.yml", emit: versions
 
+    when:
+    task.ext.when == null || task.ext.when
+
     script:
     """
     export MKL_NUM_THREADS=${task.cpus}

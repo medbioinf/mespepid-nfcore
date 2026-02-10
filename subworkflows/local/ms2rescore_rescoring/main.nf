@@ -4,10 +4,10 @@
  * using MS2PIP and DeepLC features, then outputs PIN files for Percolator
  */
 
-include { MS2RESCORE_MODEL_DOWNLOAD } from '../../../modules/local/ms2rescoremodeldownload/main'
-include { MS2RESCORE              } from '../../../modules/local/ms2rescore/main'
-include { MS2RESCORE_PIN_CORRECTION } from '../../../modules/local/ms2rescorepincorrection/main'
-include { PERCOLATOR              } from '../../../modules/local/percolator/main'
+include { MS2RESCORE_MODEL_DOWNLOAD } from '../../../modules/local/ms2rescoremodeldownload/main.nf'
+include { MS2RESCORE              } from '../../../modules/local/ms2rescore/main.nf'
+include { MS2RESCORE_PIN_CORRECTION } from '../../../modules/local/ms2rescorepincorrection/main.nf'
+include { PERCOLATOR              } from '../../../modules/local/percolator/main.nf'
 
 workflow MS2RESCORE_RESCORING {
 

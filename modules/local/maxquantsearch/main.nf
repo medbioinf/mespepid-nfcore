@@ -1,25 +1,9 @@
-// TODO nf-core: If in doubt look at other nf-core/modules to see how we are doing things! :)
-//               https://github.com/nf-core/modules/tree/master/modules/nf-core/
-//               You can also ask for help via your pull request or on the #modules channel on the nf-core Slack workspace:
-//               https://nf-co.re/join
-// TODO nf-core: A module file SHOULD only define input and output files as command-line parameters.
-//               All other parameters MUST be provided using the "task.ext" directive, see here:
-//               https://www.nextflow.io/docs/latest/process.html#ext
-//               where "task.ext" is a string.
-//               Any parameters that need to be evaluated in the context of a particular sample
-//               e.g. single-end/paired-end data MUST also be defined and evaluated appropriately.
-// TODO nf-core: Software that can be piped together SHOULD be added to separate module files
-//               unless there is a run-time, storage advantage in implementing in this way
-//               e.g. it's ok to have a single module for bwa to output BAM instead of SAM:
-//                 bwa mem | samtools view -B -T ref.fasta
-// TODO nf-core: Optional inputs are not currently supported by Nextflow. However, using an empty
-//               list (`[]`) instead of a file can be used to work around this issue.
-
 process MAXQUANT_SEARCH {
     tag "$meta.id"
     label 'process_high'
     label 'maxquant_image'
 
+    maxRetries 0  // Disable retries to prevent memory doubling beyond available memory
     stageInMode 'copy'  // MaxQuant/Mono does not support symlinks
 
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
@@ -29,7 +13,7 @@ process MAXQUANT_SEARCH {
         'biocontainers/YOUR-TOOL-HERE' }"
 
     input:
-    tuple val(meta), path(spectra_file), path(fasta), path(maxquant_params)
+    tuple val(meta), path(spectra_file), path(maxquant_params)
 
     output:
     tuple val(meta), path("*_msms.txt"), emit: msms
@@ -46,12 +30,17 @@ process MAXQUANT_SEARCH {
     dotnet /opt/MaxQuant/bin/MaxQuantCmd.dll ${maxquant_params}
     $args
 
-    # Move output to expected location
-    mv combined/txt/msms.txt ${prefix}_msms.txt
+    # Extract the spectra file path from the XML <filePaths> section and get its directory
+    SPECTRA_PATH=\$(grep -A1 '<filePaths>' ${maxquant_params} | grep -oP '<string>\\K[^<]+')
+    SPECTRA_DIR=\$(dirname "\$SPECTRA_PATH")
+
+    # MaxQuant writes output to the directory where the input file is located
+    # Output is typically in combined/txt/ directory
+    cp "\${SPECTRA_DIR}/combined/txt/msms.txt" ${prefix}_msms.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        maxquant: \$(dotnet /opt/MaxQuant/bin/MaxQuantCmd.dll --version 2>&1 | grep -oP 'MaxQuant version \K[0-9.]+' || echo "2.6.7.0")
+        maxquant: \$(dotnet /opt/MaxQuant/bin/MaxQuantCmd.dll --version 2>&1 | grep -oP 'MaxQuant version \\K[0-9.]+' || echo "2.6.7.0")
     END_VERSIONS
     """
 

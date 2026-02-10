@@ -5,6 +5,7 @@ process MS2RESCORE_MODEL_DOWNLOAD {
 
     maxForks 1  // Ensure download happens only once
 
+    // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE':

@@ -1,6 +1,3 @@
 id,sample,filepath
-EXII07043std,EXII07043,/volumes/data/datasets/mspepid_data/ISAs/EXII07043std.raw
-EXII07073std,EXII07073,/volumes/data/datasets/mspepid_data/ISAs/EXII07073std.raw
-EXII07156std,EXII07156,/volumes/data/datasets/mspepid_data/ISAs/EXII07156std.raw
-EXII07174std,EXII07174,/volumes/data/datasets/mspepid_data/ISAs/EXII07174std.raw
-EXII07203std,EXII07203,/volumes/data/datasets/mspepid_data/ISAs/EXII07203std.raw
+OVEMB150205_12,OVEMB150205_12,/volumes/data/datasets/wombat_test_data/OVEMB150205_12.raw 
+OVEMB150205_14,OVEMB150205_14,/volumes/data/datasets/wombat_test_data/OVEMB150205_14.raw

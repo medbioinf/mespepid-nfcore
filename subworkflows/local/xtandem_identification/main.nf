@@ -5,8 +5,8 @@
 // TODO nf-core: A subworkflow SHOULD import at least two modules
 
 // Original file: mspepid/src/identification/xtandem_identification.nf
-include { XTANDEM_ADJUST_PARAMS } from '../../../modules/local/xtandemadjustparams/main'
-include { XTANDEM_SEARCH        } from '../../../modules/local/xtandemsearch/main'
+include { XTANDEM_ADJUST_PARAMS } from '../../../modules/local/xtandemadjustparams/main.nf'
+include { XTANDEM_SEARCH        } from '../../../modules/local/xtandemsearch/main.nf'
 
 workflow XTANDEM_IDENTIFICATION {
 

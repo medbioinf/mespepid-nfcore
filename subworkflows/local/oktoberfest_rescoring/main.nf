@@ -1,6 +1,6 @@
-include { OKTOBERFEST        } from '../../../modules/local/oktoberfest/main'
-include { OKTOBERFEST_TO_PIN } from '../../../modules/local/oktoberfesttopin/main'
-include { PERCOLATOR         } from '../../../modules/local/percolator/main'
+include { OKTOBERFEST        } from '../../../modules/local/oktoberfest/main.nf'
+include { OKTOBERFEST_TO_PIN } from '../../../modules/local/oktoberfesttopin/main.nf'
+include { PERCOLATOR         } from '../../../modules/local/percolator/main.nf'
 
 workflow OKTOBERFEST_RESCORING {
     take:

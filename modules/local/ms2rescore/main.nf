@@ -1,10 +1,9 @@
 process MS2RESCORE {
-    tag "${meta.id}"
+    tag "$meta.id"
     label 'process_high'
     label 'python_image'
 
-    publishDir "${params.outdir}/ms2rescore/${searchengine}", mode: params.publish_dir_mode
-
+    // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE':

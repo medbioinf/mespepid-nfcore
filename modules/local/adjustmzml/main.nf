@@ -38,6 +38,9 @@ process ADJUST_MZML {
     // TODO nf-core: Named file extensions MUST be emitted for ALL output channels
     tuple val(meta), path("uncompressed/*.mzML"), emit: mzml
     path "versions.yml", emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
     
     script:
     """

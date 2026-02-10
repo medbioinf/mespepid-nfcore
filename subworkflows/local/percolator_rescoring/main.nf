@@ -3,7 +3,7 @@
  * Takes PIN files from search engines and performs FDR control
  */
 
-include { PERCOLATOR } from '../../../modules/local/percolator/main'
+include { PERCOLATOR } from '../../../modules/local/percolator/main.nf'
 
 workflow PERCOLATOR_RESCORING {
 

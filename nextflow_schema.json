@@ -36,6 +36,21 @@
                     "mimetype": "text/fasta",
                     "exists": true
                 },
+                "email": {
+                    "type": "string",
+                    "description": "Email address for completion summary.",
+                    "fa_icon": "fas fa-envelope",
+                    "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
+                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                }
+            }
+        },
+        "preprocess_options": {
+            "title": "Preprocess options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "entrapment_fold": {
                     "type": "integer",
                     "default": 0,
@@ -55,17 +70,15 @@
                     "type": "integer",
                     "default": 0,
                     "description": "Number of MS2 spectra per chunk for parallel processing. Set to 0 to disable chunking."
-                },
-                "execute_comet": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Whether to execute peptide identification with Comet search engine."
-                },
-                "comet_params_file": {
-                    "type": "string",
-                    "description": "Path to the Comet parameter file for peptide identification.",
-                    "format": "file-path"
-                },
+                }
+            }
+        },
+        "general_search_options": {
+            "title": "General search options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "precursor_tol_ppm": {
                     "type": "number",
                     "default": 10,
@@ -75,7 +88,42 @@
                     "type": "number",
                     "default": 0.02,
                     "description": "Fragment mass tolerance in Dalton for peptide identification."
+                }
+            }
+        },
+        "comet_options": {
+            "title": "Comet options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "execute_comet": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to execute peptide identification with Comet search engine."
                 },
+                "comet_params_file": {
+                    "type": "string",
+                    "description": "Path to the Comet parameter file for peptide identification.",
+                    "format": "file-path",
+                    "default": "/volumes/data/projects/nf-core-mspepident/assets/params/comet.params"
+                },
+                "comet_spectrum_id_pattern": {
+                    "type": "string",
+                    "default": ".*scan=(\\\\d+)$"
+                },
+                "comet_scan_id_pattern": {
+                    "type": "string",
+                    "default": "^(?P<scan_id>\\\\d+)$"
+                }
+            }
+        },
+        "maxquant_options": {
+            "title": "MaxQuant options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "execute_maxquant": {
                     "type": "boolean",
                     "default": true,
@@ -84,8 +132,25 @@
                 "maxquant_params_file": {
                     "type": "string",
                     "description": "Path to the MaxQuant parameter file for peptide identification.",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "default": "/volumes/data/projects/nf-core-mspepident/assets/params/mqpar.xml"
                 },
+                "maxquant_spectrum_id_pattern": {
+                    "type": "string",
+                    "default": ".*scan=(\\\\d+).*"
+                },
+                "maxquant_scan_id_pattern": {
+                    "type": "string",
+                    "default": "^(?P<scan_id>\\\\d+)$"
+                }
+            }
+        },
+        "msamanda_options": {
+            "title": "MSAmanda options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "execute_msamanda": {
                     "type": "boolean",
                     "default": true,
@@ -94,18 +159,52 @@
                 "msamanda_params_file": {
                     "type": "string",
                     "description": "Path to the MSAmanda parameter file for peptide identification.",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "default": "/volumes/data/projects/nf-core-mspepident/assets/params/msamanda_settings.xml"
                 },
+                "msamanda_spectrum_id_pattern": {
+                    "type": "string",
+                    "default": "(.*)"
+                },
+                "msamanda_scan_id_pattern": {
+                    "type": "string",
+                    "default": ".*scan=(?P<scan_id>\\\\d+)$"
+                }
+            }
+        },
+        "msfragger_options": {
+            "title": "MSFragger options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "execute_msfragger": {
                     "type": "boolean",
                     "default": true,
                     "description": "Whether to execute peptide identification with MSFragger search engine."
                 },
+                "msfragger_spectrum_id_pattern": {
+                    "type": "string",
+                    "default": "(.*)"
+                },
                 "msfragger_params_file": {
                     "type": "string",
                     "description": "Path to the MSFragger parameter file for peptide identification.",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "default": "/volumes/data/projects/nf-core-mspepident/assets/params/closed_fragger.params"
                 },
+                "msfragger_scan_id_pattern": {
+                    "type": "string",
+                    "default": ".*scan=(?P<scan_id>\\\\d+)$"
+                }
+            }
+        },
+        "ms_gf_options": {
+            "title": "MS-GF+ options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "execute_msgfplus": {
                     "type": "boolean",
                     "default": true,
@@ -114,7 +213,8 @@
                 "msgfplus_params_file": {
                     "type": "string",
                     "description": "Path to the MS-GF+ parameter file for peptide identification.",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "default": "/volumes/data/projects/nf-core-mspepident/assets/params/MSGFPlus_Params.txt"
                 },
                 "msgfplus_split_fasta": {
                     "type": "integer",
@@ -126,6 +226,22 @@
                     "default": 0,
                     "description": "Number of mzML splits for parallel MS-GF+ processing. Set to 0 to disable mzML splitting."
                 },
+                "msgfplus_spectrum_id_pattern": {
+                    "type": "string",
+                    "default": "(.*)"
+                },
+                "msgfplus_scan_id_pattern": {
+                    "type": "string",
+                    "default": ".*scan=(?P<scan_id>\\\\d+)$"
+                }
+            }
+        },
+        "sage_options": {
+            "title": "Sage options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "execute_sage": {
                     "type": "boolean",
                     "default": true,
@@ -134,7 +250,8 @@
                 "sage_config_file": {
                     "type": "string",
                     "description": "Path to the Sage configuration JSON file for peptide identification.",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "default": "/volumes/data/projects/nf-core-mspepident/assets/params/sage_config.json"
                 },
                 "sage_prefilter": {
                     "type": "boolean",
@@ -145,6 +262,22 @@
                     "default": 0,
                     "description": "Number of proteins per database chunk when prefiltering is active."
                 },
+                "sage_spectrum_id_pattern": {
+                    "type": "string",
+                    "default": "(.*)"
+                },
+                "sage_scan_id_pattern": {
+                    "type": "string",
+                    "default": ".*scan=(?P<scan_id>\\\\d+)$"
+                }
+            }
+        },
+        "x_tandem_options": {
+            "title": "X!Tandem options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "execute_xtandem": {
                     "type": "boolean",
                     "default": true,
@@ -153,24 +286,53 @@
                 "xtandem_config_file": {
                     "type": "string",
                     "description": "Path to the X!Tandem configuration XML file for peptide identification.",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "default": "/volumes/data/projects/nf-core-mspepident/assets/params/xtandem_input.xml"
                 },
+                "xtandem_spectrum_id_pattern": {
+                    "type": "string",
+                    "default": ".*scan=(\\\\d+).*"
+                },
+                "xtandem_scan_id_pattern": {
+                    "type": "string",
+                    "default": "^(?P<scan_id>\\\\d+)$"
+                }
+            }
+        },
+        "postprocessing_options": {
+            "title": "Postprocessing options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
                 "execute_percolator": {
                     "type": "boolean",
                     "default": true,
                     "description": "Whether to execute Percolator for post-processing of PSMs"
                 },
-                "email": {
-                    "type": "string",
-                    "description": "Email address for completion summary.",
-                    "fa_icon": "fas fa-envelope",
-                    "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
-                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                "execute_ms2rescore": {
+                    "type": "boolean",
+                    "default": true
                 },
-                "multiqc_title": {
+                "ms2rescore_model": {
                     "type": "string",
-                    "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
-                    "fa_icon": "fas fa-file-signature"
+                    "default": "HCD"
+                },
+                "ms2rescore_chunk_size": {
+                    "type": "integer",
+                    "default": 100000
+                },
+                "execute_oktoberfest": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "oktoberfest_intensity_model": {
+                    "type": "string",
+                    "default": "Prosit_2020_intensity_HCD"
+                },
+                "oktoberfest_irt_model": {
+                    "type": "string",
+                    "default": "Prosit_2019_irt"
                 }
             }
         },
@@ -258,14 +420,6 @@
                     "fa_icon": "fas fa-remove-format",
                     "hidden": true
                 },
-                "max_multiqc_email_size": {
-                    "type": "string",
-                    "description": "File size limit when attaching MultiQC reports to summary emails.",
-                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "default": "25.MB",
-                    "fa_icon": "fas fa-file-upload",
-                    "hidden": true
-                },
                 "monochrome_logs": {
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
@@ -278,24 +432,6 @@
                     "fa_icon": "fas fa-people-group",
                     "help_text": "Incoming hook URL for messaging service. Currently, MS Teams and Slack are supported.",
                     "hidden": true
-                },
-                "multiqc_config": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Custom config file to supply to MultiQC.",
-                    "fa_icon": "fas fa-cog",
-                    "hidden": true
-                },
-                "multiqc_logo": {
-                    "type": "string",
-                    "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
-                    "fa_icon": "fas fa-image",
-                    "hidden": true
-                },
-                "multiqc_methods_description": {
-                    "type": "string",
-                    "description": "Custom MultiQC yaml file containing HTML including a methods description.",
-                    "fa_icon": "fas fa-cog"
                 },
                 "validate_params": {
                     "type": "boolean",
@@ -335,6 +471,36 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/preprocess_options"
+        },
+        {
+            "$ref": "#/$defs/general_search_options"
+        },
+        {
+            "$ref": "#/$defs/comet_options"
+        },
+        {
+            "$ref": "#/$defs/maxquant_options"
+        },
+        {
+            "$ref": "#/$defs/msamanda_options"
+        },
+        {
+            "$ref": "#/$defs/msfragger_options"
+        },
+        {
+            "$ref": "#/$defs/ms_gf_options"
+        },
+        {
+            "$ref": "#/$defs/sage_options"
+        },
+        {
+            "$ref": "#/$defs/x_tandem_options"
+        },
+        {
+            "$ref": "#/$defs/postprocessing_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

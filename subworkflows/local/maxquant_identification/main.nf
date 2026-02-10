@@ -16,24 +16,29 @@ workflow MAXQUANT_IDENTIFICATION {
     main:
     ch_versions = channel.empty()
 
-    // Combine spectra files with fasta and params for parameter adjustment
+    // Combine spectra files with fasta and params for MaxQuant parameter adjustment
     ch_spectra
-        .combine(ch_fasta.map { meta, fasta -> fasta })
-        .combine(ch_maxquant_params.map { meta, params -> params })
-        .set { ch_adjust_input }
+        .combine(ch_fasta.map { _meta, fasta -> fasta })
+        .combine(ch_maxquant_params.map { _meta, params -> params })
+        .set { ch_maxquant_input }
 
-    // Adjust MaxQuant parameter file (file_type extracted from meta.ext inside process)
+    // Adjust MaxQuant parameter file with tolerances and file paths
     MAXQUANT_ADJUST_PARAMS(
-        ch_adjust_input,
+        ch_maxquant_input,
         precursor_tol_ppm
     )
     ch_versions = ch_versions.mix(MAXQUANT_ADJUST_PARAMS.out.versions)
 
-    // Run MaxQuant peptide identification with fully adjusted parameters
-    MAXQUANT_SEARCH(MAXQUANT_ADJUST_PARAMS.out.params)
+    // Extract spectra_file and params for search (drop fasta)
+    MAXQUANT_ADJUST_PARAMS.out.params
+        .map { meta, spectra_file, _fasta, params -> [meta, spectra_file, params] }
+        .set { ch_adjusted_params }
+
+    // Run MaxQuant peptide identification with adjusted parameters
+    MAXQUANT_SEARCH(ch_adjusted_params)
     ch_versions = ch_versions.mix(MAXQUANT_SEARCH.out.versions)
 
     emit:
-    msms     = MAXQUANT_SEARCH.out.msms       // channel: tuple val(meta), path(*_msms.txt)
-    versions = ch_versions                    // channel: path(versions.yml)
+    msms     = MAXQUANT_SEARCH.out.msms    // channel: tuple val(meta), path(*_msms.txt)
+    versions = ch_versions                  // channel: path(versions.yml)
 }
