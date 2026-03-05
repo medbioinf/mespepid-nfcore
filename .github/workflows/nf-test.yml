@@ -27,9 +27,7 @@ env:
 jobs:
   nf-test-changes:
     name: nf-test-changes
-    runs-on: # use self-hosted runners
-      - runs-on=${{ github.run_id }}-nf-test-changes
-      - runner=4cpu-linux-x64
+    runs-on: [self-hosted, linux, x64] # this is medbioinfs runner - change when pushing to nf-core runner
     outputs:
       shard: ${{ steps.set-shards.outputs.shard }}
       total_shards: ${{ steps.set-shards.outputs.total_shards }}
@@ -119,7 +117,7 @@ jobs:
   confirm-pass:
     needs: [nf-test]
     if: always()
-    runs-on:  # use self-hosted runners
+    runs-on: # use self-hosted runners
       - runs-on=${{ github.run_id }}-confirm-pass
       - runner=2cpu-linux-x64
     steps:
