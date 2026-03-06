@@ -20,6 +20,7 @@ workflow MSPEPID {
     take:
     ch_samplesheet          // channel: samplesheet read in from --input
     fasta                   // string: path to fasta file
+    entrapment_fold         // integer: fold for entrapment generation, 0 for none
     skip_decoy_generation   // boolean: whether to skip decoy generation
 
     main:
@@ -33,9 +34,14 @@ workflow MSPEPID {
     // prepare the databases: decoy generation and entrapment database creation
     PREPARE_DATABASES (
         ch_fasta,
+        entrapment_fold,
         skip_decoy_generation
     )
-    // Tool version tuples are consumed via Channel.topic("versions") below.
+
+    // prepare the spectra
+    // PREPARE_SPECTRA (
+    //     ch_samplesheet
+    // )
 
     //
     // Collate and save software versions

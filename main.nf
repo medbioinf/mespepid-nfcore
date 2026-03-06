@@ -40,6 +40,7 @@ workflow NFCORE_MSPEPID {
     MSPEPID (
         samplesheet,
         params.fasta,
+        params.entrapment_fold,
         params.skip_decoy_generation
     )
 }

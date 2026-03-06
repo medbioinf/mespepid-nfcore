@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "fdrbench"
+description: Estimation of false discovery proportion for mass spectrometry proteomics data using entrapment 
+keywords:
+  - entrapment
+  - database
+  - proteomics
+tools:
+  - "fdrbench":
+      description: "Estimation of false discovery proportion for mass spectrometry proteomics data using entrapment"
+      homepage: "https://github.com/Noble-Lab/FDRBench"
+      documentation: "https://github.com/Noble-Lab/FDRBench"
+      tool_dev_url: "https://github.com/Noble-Lab/FDRBench"
+      doi: "10.1038/s41592-025-02719-x"
+      licence: ["Apache License 2.0"]
+      identifier: null
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - fasta:
+        type: file
+        description: Fasta file containing protein sequences
+        pattern: "*.{fasta,faa}"
+        ontologies: []
+  - entrapment_fold:
+      type: integer
+      description: |
+        Fold for entrapment generation, 0 for none
+
+output:
+  entrapment_fasta:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - "*.fasta":
+          type: file
+          description: Fasta file containing proteins and decoy proteins
+          pattern: "*.{fasta}"
+          ontologies: []
+  versions_fdrbench:
+    - - "${task.process}":
+          type: string
+          description: The process the versions were collected from
+      - "fdrbench":
+          type: string
+          description: The name of the tool
+      - "nightly:146f77":
+          type: val
+          description: The actual version of the tool
+  versions_java:
+    - - "${task.process}":
+          type: string
+          description: The process the versions were collected from
+      - "fdrbench":
+          type: string
+          description: The name of the tool
+      - "java -version 2>&1 | head -1":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - "${task.process}":
+          type: string
+          description: The process the versions were collected from
+      - "fdrbench":
+          type: string
+          description: The name of the tool
+      - "nightly:146f77":
+          type: val
+          description: The actual version of the tool
+    - - "${task.process}":
+          type: string
+          description: The process the versions were collected from
+      - "fdrbench":
+          type: string
+          description: The name of the tool
+      - "java -version 2>&1 | head -1":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+authors:
+  - "@julianu"
+maintainers:
+  - "@julianu"
