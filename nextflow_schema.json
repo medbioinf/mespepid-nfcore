@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/mspepid/master/nextflow_schema.json",
+    "$id": "https://raw.githubusercontent.com/nf-core/mspepid/main/nextflow_schema.json",
     "title": "nf-core/mspepid pipeline parameters",
     "description": "A pipeline for the identification of peptides in mass spectrometry data.",
     "type": "object",
