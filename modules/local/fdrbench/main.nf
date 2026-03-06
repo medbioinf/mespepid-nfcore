@@ -1,8 +1,6 @@
 /*
- * Create a entrapment database for FDR assessment
+ * Create an entrapment database for FDR assessment
  */
-
-
 process FDRBENCH {
     tag "${meta.id}"
     label 'process_single'
@@ -38,7 +36,7 @@ process FDRBENCH {
     }
 
     """
-    java -Xmx${avail_mem}M \\ 
+    java -Xmx${avail_mem}M \\
         ${args} \\
         -jar /opt/fdrbench/fdrbench.jar \\
             -db ${fasta} \\
@@ -48,7 +46,7 @@ process FDRBENCH {
             -entrapment_label ENTRAPMENT_ \\
             -entrapment_pos 0 \\
             -uniprot -check
-    
+
     # 'Reheader' to add entrapment index to database and accession part of the header
     # and remove empty entrapment sequences (which can appear if the original sequence has many Xs)
     # The following sed command performs two operations:
