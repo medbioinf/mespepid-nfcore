@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
 name: "fdrbench"
-description: Estimation of false discovery proportion for mass spectrometry proteomics data using entrapment 
+description: Estimation of false discovery proportion for mass spectrometry proteomics data using entrapment
 keywords:
   - entrapment
   - database
