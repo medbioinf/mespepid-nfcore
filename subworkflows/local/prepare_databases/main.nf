@@ -1,12 +1,11 @@
 /*
  * Prepare the protein sequence databases, like adding decoys and entrapment sequences
  */
- 
+
 include { FDRBENCH } from '../../../modules/local/fdrbench/main'
 include { OPENMS_DECOYDATABASE } from '../../../modules/nf-core/openms/decoydatabase/main'
- 
-workflow PREPARE_DATABASES {
 
+workflow PREPARE_DATABASES {
     take:
     ch_fasta
     entrapment_fold
@@ -17,16 +16,16 @@ workflow PREPARE_DATABASES {
     ch_versions = channel.empty()
 
     if (entrapment_fold > 0) {
-        FDRBENCH (
+        FDRBENCH(
             ch_fasta,
-            entrapment_fold
+            entrapment_fold,
         )
         ch_versions = ch_versions.mix(FDRBENCH.out.versions_fdrbench).mix(FDRBENCH.out.versions_java)
         ch_fasta = FDRBENCH.out.entrapment_fasta
     }
 
     if (!skip_decoy_generation) {
-        OPENMS_DECOYDATABASE (
+        OPENMS_DECOYDATABASE(
             ch_fasta
         )
         ch_versions = ch_versions.mix(OPENMS_DECOYDATABASE.out.versions_openms)

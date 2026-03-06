@@ -4,14 +4,14 @@
 
 
 process FDRBENCH {
-    tag "$meta.id"
+    tag "${meta.id}"
     label 'process_single'
 
     // TODO Need to create a conda and singularity package...
     conda "${moduleDir}/environment.yml"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE':
-        'quay.io/medbioinf/fdrbench-nightly:146f77' }"
+    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE'
+        : 'quay.io/medbioinf/fdrbench-nightly:146f77'}"
 
     input:
     tuple val(meta), path(fasta)
@@ -31,13 +31,14 @@ process FDRBENCH {
 
     def avail_mem = 8192
     if (!task.memory) {
-        log.info '[FDRBench] Available memory not known - defaulting to 4GB. Specify process memory requirements to change this.'
-    } else {
-        avail_mem = (task.memory.mega*0.9).intValue()   // leave 10% headroom for JVM overhead
+        log.info('[FDRBench] Available memory not known - defaulting to 4GB. Specify process memory requirements to change this.')
+    }
+    else {
+        avail_mem = (task.memory.mega * 0.9).intValue()
     }
 
     """
-    java -Xmx${avail_mem}M \\
+    java -Xmx${avail_mem}M \\ 
         ${args} \\
         -jar /opt/fdrbench/fdrbench.jar \\
             -db ${fasta} \\
@@ -72,7 +73,7 @@ process FDRBENCH {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    echo $args
+    echo ${args}
 
     touch ${prefix}-entrapment.fasta
     """
