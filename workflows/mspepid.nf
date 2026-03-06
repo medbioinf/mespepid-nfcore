@@ -7,6 +7,8 @@ include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mspepid_pipeline'
 
+include { PREPARE_DATABASES } from '../subworkflows/local/prepare_databases'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -16,10 +18,24 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mspe
 workflow MSPEPID {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    ch_samplesheet          // channel: samplesheet read in from --input
+    fasta                   // string: path to fasta file
+    skip_decoy_generation   // boolean: whether to skip decoy generation
+
     main:
 
     ch_versions = channel.empty()
+    
+    // create channel for fasta input
+    ch_fasta = channel.fromPath(fasta, checkIfExists: true)
+        .map { fa -> [[id:fa.getBaseName()], fa] }
+
+    // prepare the databases: decoy generation and entrapment database creation
+    PREPARE_DATABASES (
+        ch_fasta,
+        skip_decoy_generation
+    )
+    // Tool version tuples are consumed via Channel.topic("versions") below.
 
     //
     // Collate and save software versions
