@@ -29,7 +29,7 @@ jobs:
     name: nf-test-changes
     runs-on: [self-hosted, linux, x64] # this is medbioinfs runner - change when pushing to nf-core runner
     container:
-      image: python:3.12-slim-bookworm
+      image: python:3.12-bookworm
     outputs:
       shard: ${{ steps.set-shards.outputs.shard }}
       total_shards: ${{ steps.set-shards.outputs.total_shards }}
