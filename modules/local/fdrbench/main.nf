@@ -6,7 +6,6 @@ process FDRBENCH {
     label 'process_single'
 
     // TODO Need to create a conda and singularity package...
-    conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
         ? 'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE'
         : 'quay.io/medbioinf/fdrbench-nightly:146f77'}"
