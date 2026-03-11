@@ -29,7 +29,7 @@ jobs:
     name: nf-test-changes
     runs-on: [self-hosted, linux, x64] # this is medbioinfs runner - change when pushing to nf-core runner
     container:
-      image: python:3.14-bookworm
+      image: quay.io/medbioinf/base-tools:1.0.0
     outputs:
       shard: ${{ steps.set-shards.outputs.shard }}
       total_shards: ${{ steps.set-shards.outputs.total_shards }}
@@ -46,9 +46,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "21"
-
-      - name: Install jq
-        uses: dcarbone/install-jq-action@v3.2.0
 
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
@@ -73,7 +70,7 @@ jobs:
     if: ${{ needs.nf-test-changes.outputs.total_shards != '0' }}
     runs-on: [self-hosted, linux, x64] # this is medbioinfs runner - change when pushing to nf-core runner
     container:
-      image: python:3.14-bookworm
+      image: quay.io/medbioinf/base-tools:1.0.0
     strategy:
       fail-fast: false
       matrix:
