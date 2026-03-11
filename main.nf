@@ -38,7 +38,10 @@ workflow NFCORE_MSPEPID {
     // WORKFLOW: Run pipeline
     //
     MSPEPID (
-        samplesheet
+        samplesheet,
+        params.fasta,
+        params.entrapment_fold,
+        params.skip_decoy_generation
     )
 }
 /*
@@ -80,7 +83,7 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
+        params.hook_url
     )
 }
 
