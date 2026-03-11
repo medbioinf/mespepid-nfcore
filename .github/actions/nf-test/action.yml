@@ -108,4 +108,4 @@ runs:
       if: always()
       shell: bash
       run: |
-        sudo rm -rf /home/ubuntu/tests/
+        rm -rf /home/ubuntu/tests/
