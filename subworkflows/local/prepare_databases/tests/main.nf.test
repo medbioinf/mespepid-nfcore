@@ -1,0 +1,80 @@
+nextflow_workflow {
+
+    name "Test subworkflow PREPARE_DATABASES"
+    script "../main.nf"
+    workflow "PREPARE_DATABASES"
+
+    test("fasta - decoy only [no entrapment]") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id: 'test'],
+                    file('https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/proteomics/database/yeast_UPS.fasta')
+                ])
+                input[1] = 0           // entrapment_fold = 0 → skip FDRBENCH
+                input[2] = false       // skip_decoy_generation = false → run OPENMS_DECOYDATABASE
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.fasta
+            with(workflow.out.fasta) {
+                assert size() == 1
+                // decoy entries should be present
+                assert path(get(0)[1]).text.contains("DECOY_")
+            }
+        }
+    }
+
+    test("fasta - entrapment + decoy") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id: 'test'],
+                    file('https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/proteomics/database/yeast_UPS.fasta')
+                ])
+                input[1] = 1           // entrapment_fold = 1 → run FDRBENCH
+                input[2] = false       // skip_decoy_generation = false → also run OPENMS_DECOYDATABASE
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.fasta
+            with(workflow.out.fasta) {
+                assert size() == 1
+                assert path(get(0)[1]).text.contains("ENTRAPMENT_")
+                assert path(get(0)[1]).text.contains("DECOY_")
+            }
+        }
+    }
+
+    test("fasta - skip both [stub]") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id: 'test'],
+                    file('https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/proteomics/database/yeast_UPS.fasta')
+                ])
+                input[1] = 0
+                input[2] = true        // skip_decoy_generation = true → nothing runs
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+    }
+}

@@ -1,0 +1,4 @@
+subworkflows/local/prepare_databases:
+  - subworkflows/local/prepare_databases/**
+  - modules/local/fdrbench/**
+  - modules/nf-core/openms/decoydatabase/**
