@@ -70,7 +70,7 @@ jobs:
     if: ${{ needs.nf-test-changes.outputs.total_shards != '0' }}
     runs-on: [self-hosted, linux, x64] # this is medbioinfs runner - change when pushing to nf-core runner
     container:
-      image: quay.io/medbioinf/base-tools:1.0.0
+      image: ubuntu:24.04
     strategy:
       fail-fast: false
       matrix:
