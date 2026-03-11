@@ -29,7 +29,7 @@ jobs:
     name: nf-test-changes
     runs-on: [self-hosted, linux, x64] # this is medbioinfs runner - change when pushing to nf-core runner
     container:
-      image: python:3.12-bookworm
+      image: python:3.14-bookworm
     outputs:
       shard: ${{ steps.set-shards.outputs.shard }}
       total_shards: ${{ steps.set-shards.outputs.total_shards }}
@@ -73,7 +73,7 @@ jobs:
     if: ${{ needs.nf-test-changes.outputs.total_shards != '0' }}
     runs-on: [self-hosted, linux, x64] # this is medbioinfs runner - change when pushing to nf-core runner
     container:
-      image: python:3.12-bookworm
+      image: python:3.14-bookworm
     strategy:
       fail-fast: false
       matrix:
