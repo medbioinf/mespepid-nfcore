@@ -47,6 +47,9 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
+      - name: Install jq
+        uses: dcarbone/install-jq-action@v3.2.0
+
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           fetch-depth: 0
