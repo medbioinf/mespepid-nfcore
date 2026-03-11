@@ -25,6 +25,11 @@ runs:
       with:
         version: ${{ env.NFT_VER }}
 
+    - name: Fix permissions on workspace (if needed)
+      shell: bash
+      run: |
+        chown -R $(id -u):$(id -g) "$GITHUB_WORKSPACE"
+
     - name: Show repo path and contents
       shell: bash
       run: |
