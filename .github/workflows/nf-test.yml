@@ -73,7 +73,7 @@ jobs:
     if: ${{ needs.nf-test-changes.outputs.total_shards != '0' }}
     runs-on: [self-hosted, linux, x64] # this is medbioinfs runner - change when pushing to nf-core runner
     container:
-      image: ubuntu:24.04
+      image: python:3.12-bookworm
     strategy:
       fail-fast: false
       matrix:
