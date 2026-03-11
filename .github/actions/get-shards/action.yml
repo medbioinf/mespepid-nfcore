@@ -28,6 +28,8 @@ runs:
       id: shards
       shell: bash
       run: |
+        cd "$GITHUB_WORKSPACE"
+
         # Run nf-test with dynamic parameter
         nftest_output=$(nf-test test \
           --profile +docker \
