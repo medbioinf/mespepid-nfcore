@@ -1,5 +1,5 @@
 /*
- * Peform spectrum identification using Comet.
+ * Perform spectrum identification using Comet.
  */
 process COMET {
     tag "${meta.id}"
@@ -56,7 +56,7 @@ process COMET {
 
     if [ -n "${comet_paramfile}" ]; then
         # the param file was passed, check the name
-        if [ "${comet_paramfile}" != "\${PARAMS_FILE}"]; then
+        if [ "${comet_paramfile}" != "\${PARAMS_FILE}" ]; then
             # the param file has a different name than the required, so copy it to the default name for record keeping
             cp ${comet_paramfile} \${PARAMS_FILE}
         fi

@@ -99,7 +99,7 @@ output:
             e.g. `[ id:'sample1' ]`
       - "*.pin":
           type: file
-          description: Search results in Prrcolator input format (pin)
+          description: Search results in Percolator input format (pin)
           pattern: "*.pin"
   versions_comet:
     - - "${task.process}":

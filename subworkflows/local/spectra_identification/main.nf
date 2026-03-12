@@ -21,9 +21,9 @@ workflow SPECTRA_IDENTIFICATION {
 
 
     //TODO: only run if comet is activated
-    comet_in = ch_ident_in.map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
+    ch_comet_in = ch_ident_in.map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
     COMET(
-        comet_in,
+        ch_comet_in,
         precursor_tol_ppm,
         fragment_tol_da,
     )
