@@ -64,6 +64,23 @@
                 }
             }
         },
+        "general_search_parameters": {
+            "title": "General search parameters",
+            "type": "object",
+            "description": "Search parameters that are common to all search engines.",
+            "properties": {
+                "precursor_tol_ppm": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "The precursor tolerance in PPM"
+                },
+                "fragment_tol_da": {
+                    "type": "number",
+                    "default": 0.02,
+                    "description": "The fragment tolerance in Dalton"
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -202,6 +219,9 @@
         },
         {
             "$ref": "#/$defs/database_options"
+        },
+        {
+            "$ref": "#/$defs/general_search_parameters"
         },
         {
             "$ref": "#/$defs/institutional_config_options"
