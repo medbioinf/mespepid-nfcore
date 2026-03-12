@@ -3,7 +3,7 @@ include { COMET } from '../../../modules/local/comet/main'
 workflow SPECTRA_IDENTIFICATION {
     take:
     ch_fasta
-    ch_samplesheet
+    ch_spectra_files // val(meta), path(mzml), path(raw_spectra)
     precursor_tol_ppm
     fragment_tol_da
 
@@ -17,11 +17,13 @@ workflow SPECTRA_IDENTIFICATION {
     // prepare the input channel for identifications
     // TODO: this right now only adds the fasta - must be adapted for per sample DB
     // TODO: also adapt for per-sample parameters
-    ch_ident_in = ch_samplesheet.combine(ch_fasta.map { _meta, fasta -> [fasta] })
+    ch_ident_in = ch_spectra_files.combine(ch_fasta.map { _meta, fasta -> [fasta] })
+
 
     //TODO: only run if comet is activated
+    comet_in = ch_ident_in.map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
     COMET(
-        ch_ident_in,
+        comet_in,
         precursor_tol_ppm,
         fragment_tol_da,
     )

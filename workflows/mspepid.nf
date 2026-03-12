@@ -45,11 +45,12 @@ workflow MSPEPID {
     PREPARE_SPECTRA(
         ch_samplesheet
     )
+    ch_prepared_spectra = PREPARE_SPECTRA.out.mzmls.join(PREPARE_SPECTRA.out.uncompressed, by: 0)
 
     // spectra identification
     SPECTRA_IDENTIFICATION(
         ch_fasta_db,
-        ch_samplesheet,
+        ch_prepared_spectra,
         precursor_tol_ppm,
         fragment_tol_da,
     )

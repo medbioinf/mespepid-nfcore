@@ -32,11 +32,11 @@ process COMET {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
-    def output_sqt = task.ext.output_sqt == null ? 1 : (task.ext.output_sqt ? 1 : 0)
+    def output_sqt = task.ext.output_sqt == null ? 0 : (task.ext.output_sqt ? 1 : 0)
     def output_txt = task.ext.output_txt == null ? 0 : (task.ext.output_txt ? 1 : 0)
     def output_pepxml = task.ext.output_pepxml == null ? 0 : (task.ext.output_pepxml ? 1 : 0)
     def output_mzidentml = task.ext.output_mzidentml == null ? 1 : (task.ext.output_mzidentml ? 1 : 0)
-    def output_percolator = task.ext.output_percolator == null ? 1 : (task.ext.output_percolator ? 1 : 0)
+    def output_percolator = task.ext.output_percolator == null ? 0 : (task.ext.output_percolator ? 1 : 0)
     def num_output_lines = task.ext.num_output_lines == null ? 5 : task.ext.num_output_lines
 
     def comet_threads = 8
