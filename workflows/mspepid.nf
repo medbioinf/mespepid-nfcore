@@ -8,6 +8,7 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mspepid_pipeline'
 
 include { PREPARE_DATABASES } from '../subworkflows/local/prepare_databases'
+include { PREPARE_SPECTRA   } from '../subworkflows/local/prepare_spectra'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,15 +38,15 @@ workflow MSPEPID {
         skip_decoy_generation,
     )
 
-    // prepare the spectra
-    // PREPARE_SPECTRA (
-    //     ch_samplesheet
-    // )
+    // prepare the spectra files
+    PREPARE_SPECTRA (
+        ch_samplesheet
+    )
 
     //
     // Collate and save software versions
     //
-    def topic_versions = Channel
+    def topic_versions = channel
         .topic("versions")
         .distinct()
         .branch { entry ->
