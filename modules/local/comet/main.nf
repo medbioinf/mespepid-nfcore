@@ -99,6 +99,11 @@ process COMET {
     """
     echo ${args}
 
+    touch ${prefix}.comet.params
+    touch ${prefix}.sqt
+    touch ${prefix}.txt
+    touch ${prefix}.pep.xml
     touch ${prefix}.mzid
+    touch ${prefix}.pin
     """
 }
