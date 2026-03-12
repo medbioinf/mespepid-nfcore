@@ -1,5 +1,5 @@
 /*
- * Convert Bruker .d-Folder to mzML using tdf2mzml 
+ * Convert Bruker .d-Folder to mzML using tdf2mzml
  **/
 process TDF2MZML {
     tag "${meta.id}"
@@ -38,7 +38,7 @@ process TDF2MZML {
 
     """
     echo ${args}
-    
+
     touch ${prefix}.mzML
     """
 }
