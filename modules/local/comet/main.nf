@@ -19,8 +19,12 @@ process COMET {
     val fragment_tol_da
 
     output:
-    tuple val(meta), path("*.mzid"), emit: mzid
     tuple val(meta), path("*.comet.params"), emit: params
+    tuple val(meta), path("*.sqt"), emit: sqt, optional: true
+    tuple val(meta), path("*.txt"), emit: txt, optional: true
+    tuple val(meta), path("*.pep.xml"), emit: pepxml, optional: true
+    tuple val(meta), path("*.mzid"), emit: mzid, optional: true
+    tuple val(meta), path("*.pin"), emit: pin, optional: true
     tuple val("${task.process}"), val('comet'), eval("comet | head -2 | tail -1 | sed 's;.*\"\\(.*\\).*\";\\1;g'"), topic: versions, emit: versions_comet
 
     when:
@@ -29,6 +33,13 @@ process COMET {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+
+    def output_sqt = task.ext.output_sqt == null ? 1 : (task.ext.output_sqt ? 1 : 0)
+    def output_txt = task.ext.output_txt == null ? 0 : (task.ext.output_txt ? 1 : 0)
+    def output_pepxml = task.ext.output_pepxml == null ? 0 : (task.ext.output_pepxml ? 1 : 0)
+    def output_mzidentml = task.ext.output_mzidentml == null ? 1 : (task.ext.output_mzidentml ? 1 : 0)
+    def output_percolator = task.ext.output_percolator == null ? 1 : (task.ext.output_percolator ? 1 : 0)
+    def num_output_lines = task.ext.num_output_lines == null ? 5 : task.ext.num_output_lines
 
     def comet_threads = 8
     if (!task.cpus) {
@@ -42,8 +53,8 @@ process COMET {
     def comet_paramfile = ""
 
     """
-    BASE_FILENAME="${prefix}-${mzml.baseName}"
-    PARAMS_FILE="${prefix}-${mzml.baseName}.comet.params"
+    BASE_FILENAME="${prefix}"
+    PARAMS_FILE="${prefix}.comet.params"
 
     if [ -n "${comet_paramfile}" ]; then
         # the param file was passed, check the name
@@ -68,13 +79,13 @@ process COMET {
 
     sed -i "s;^num_threads.*;num_threads = ${comet_threads};" \${PARAMS_FILE}
 
-    sed -i "s;^output_sqtfile.*;output_sqtfile = 0;" \${PARAMS_FILE}
-    sed -i "s;^output_txtfile.*;output_txtfile = 0;" \${PARAMS_FILE}
-    sed -i "s;^output_pepxmlfile.*;output_pepxmlfile = 0;" \${PARAMS_FILE}
-    sed -i "s;^output_mzidentmlfile.*;output_mzidentmlfile = 1;" \${PARAMS_FILE}
-    sed -i "s;^output_percolatorfile.*;output_percolatorfile = 0;" \${PARAMS_FILE}
+    sed -i "s;^output_sqtfile.*;output_sqtfile = ${output_sqt};" \${PARAMS_FILE}
+    sed -i "s;^output_txtfile.*;output_txtfile = ${output_txt};" \${PARAMS_FILE}
+    sed -i "s;^output_pepxmlfile.*;output_pepxmlfile =  ${output_pepxml};" \${PARAMS_FILE}
+    sed -i "s;^output_mzidentmlfile.*;output_mzidentmlfile = ${output_mzidentml};" \${PARAMS_FILE}
+    sed -i "s;^output_percolatorfile.*;output_percolatorfile = ${output_percolator};" \${PARAMS_FILE}
 
-    sed -i "s;^num_output_lines.*;num_output_lines = 5;" \${PARAMS_FILE}
+    sed -i "s;^num_output_lines.*;num_output_lines = ${num_output_lines};" \${PARAMS_FILE}
 
     # run comet with given parameters
     comet \\
@@ -90,6 +101,6 @@ process COMET {
     """
     echo ${args}
 
-    touch ${prefix}-${mzml.baseName}.mzid
+    touch ${prefix}.mzid
     """
 }
