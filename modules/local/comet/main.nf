@@ -1,9 +1,6 @@
 /*
  * Peform spectrum identification using Comet.
  */
-
-// TODO: for now, only mzid is exported and all other outputs ignored, this should be parameterized and allow other outputs as well
-
 process COMET {
     tag "${meta.id}"
     label 'process_medium'
@@ -15,6 +12,7 @@ process COMET {
 
     input:
     tuple val(meta), path(mzml), path(fasta)
+    // TODO: find a better way to pass search engine parameters, maybe with a special parameters channel, like the meta?
     val precursor_tol_ppm
     val fragment_tol_da
 
