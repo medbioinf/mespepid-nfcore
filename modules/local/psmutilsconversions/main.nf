@@ -6,7 +6,7 @@ process PSMUTILSCONVERSIONS {
     publishDir path: { "${params.outdir}/${meta.searchengine ?: 'unknown'}" }, mode: params.publish_dir_mode
 
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE'
+        ? 'quay.io/medbioinf/psm-utils:pepxml-and-mzid-fixes'
         : 'quay.io/medbioinf/psm-utils:pepxml-and-mzid-fixes'}"
 
     input:
