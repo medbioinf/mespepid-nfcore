@@ -1,5 +1,7 @@
 include { COMET } from '../../../modules/local/comet/main'
+
 include { PSMUTILSCONVERSIONS } from '../../../modules/local/psmutilsconversions/main'
+include { PERCOLATOR } from '../../../modules/local/percolator/main'
 
 workflow SPECTRA_IDENTIFICATION {
     take:
@@ -7,6 +9,8 @@ workflow SPECTRA_IDENTIFICATION {
     ch_spectra_files // val(meta), path(mzml), path(raw_spectra)
     precursor_tol_ppm
     fragment_tol_da
+    run_comet
+    run_percolator
 
     main:
 
@@ -22,14 +26,16 @@ workflow SPECTRA_IDENTIFICATION {
 
 
     //TODO: only run if comet is activated
-    ch_comet_in = ch_ident_in.map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
-    COMET(
-        ch_comet_in,
-        precursor_tol_ppm,
-        fragment_tol_da,
-    )
-    ch_versions = ch_versions.mix(COMET.out.versions_comet)
-    ch_identifications = COMET.out.mzid.map { meta, mzid -> [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid] }
+    if (run_comet) {
+        ch_comet_in = ch_ident_in.map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
+        COMET(
+            ch_comet_in,
+            precursor_tol_ppm,
+            fragment_tol_da,
+        )
+        ch_versions = ch_versions.mix(COMET.out.versions_comet)
+        ch_identifications = COMET.out.mzid.map { meta, mzid -> [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid] }
+    }
 
     // convert search results into psm-utils format and PIN files for downstream processing
     PSMUTILSCONVERSIONS(
@@ -40,6 +46,15 @@ workflow SPECTRA_IDENTIFICATION {
 
     ch_psmutils_tsvs = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, file -> [meta + [status: 'psmutils'], file] }
     ch_searchengine_pins = PSMUTILSCONVERSIONS.out.pin.map { meta, file -> [meta + [status: 'pin'], file] }
+
+    // run percolator for the search results
+    if (run_percolator) {
+        ch_percolator_in = ch_searchengine_pins.map { meta, pin -> [meta + [outdir: meta.searchengine], pin] }
+        PERCOLATOR(
+            ch_percolator_in
+        )
+        ch_versions = ch_versions.mix(PERCOLATOR.out.versions_percolator)
+    }
 
     emit:
     versions = ch_versions
