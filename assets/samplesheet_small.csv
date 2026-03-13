@@ -1,9 +1,8 @@
 ID,spectrum_file
-1,assets/testfiles_empty/sample1.d
-2,assets/testfiles_empty/sample2.raw
-3,assets/testfiles_empty/sample3.RAW
-4,assets/testfiles_empty/sample4.mzML
-5,assets/testfiles_empty/sample5.mzml
-6,assets/testfiles_empty/sample6.raw.gz
-7,assets/testfiles_empty/sample7.raw.tar.gz
-8,assets/testfiles_empty/sample8.raw.zip
+1,assets/testfiles_small/50fmol_BSA_S1-A2_1_32.d.tar.gz
+2,assets/testfiles_small/50fmol_BSA_S1-A2_1_32.d.zip
+3,assets/testfiles_small/OVEMB150205_12.raw
+4,assets/testfiles_small/OVEMB150205_14.raw
+5,assets/testfiles_small/OVEMB150205_12.raw.gz
+6,assets/testfiles_small/OVEMB150205_12.raw.tar.gz
+7,assets/testfiles_small/OVEMB150205_12.raw.zip
