@@ -1,0 +1,49 @@
+include { COMET } from '../../../modules/local/comet/main'
+include { PSMUTILSCONVERSIONS } from '../../../modules/local/psmutilsconversions/main'
+
+workflow SPECTRA_IDENTIFICATION {
+    take:
+    ch_fasta
+    ch_spectra_files // val(meta), path(mzml), path(raw_spectra)
+    precursor_tol_ppm
+    fragment_tol_da
+
+    main:
+
+    ch_versions = channel.empty()
+
+    // TODO: this will become the identifications, probably with some meta mapping?
+    ch_identifications = channel.empty()
+
+    // prepare the input channel for identifications
+    // TODO: this right now only adds the fasta - must be adapted for per sample DB
+    // TODO: also adapt for per-sample parameters
+    ch_ident_in = ch_spectra_files.combine(ch_fasta.map { _meta, fasta -> [fasta] })
+
+
+    //TODO: only run if comet is activated
+    ch_comet_in = ch_ident_in.map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
+    COMET(
+        ch_comet_in,
+        precursor_tol_ppm,
+        fragment_tol_da,
+    )
+    ch_versions = ch_versions.mix(COMET.out.versions_comet)
+    ch_identifications = COMET.out.mzid.map { meta, mzid -> [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid] }
+
+    // convert search results into psm-utils format and PIN files for downstream processing
+    PSMUTILSCONVERSIONS(
+        ch_identifications
+    )
+    ch_versions = ch_versions.mix(PSMUTILSCONVERSIONS.out.versions_psm_utils)
+    ch_versions = ch_versions.mix(PSMUTILSCONVERSIONS.out.versions_python)
+
+    ch_psmutils_tsvs = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, file -> [meta + [status: 'psmutils'], file] }
+    ch_searchengine_pins = PSMUTILSCONVERSIONS.out.pin.map { meta, file -> [meta + [status: 'pin'], file] }
+
+    emit:
+    versions = ch_versions
+    raw_identifications = ch_identifications
+    psmutils_tsvs = ch_psmutils_tsvs
+    searchengine_pins = ch_searchengine_pins
+}

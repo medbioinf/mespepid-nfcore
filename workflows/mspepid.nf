@@ -8,7 +8,9 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mspepid_pipeline'
 
 include { PREPARE_DATABASES } from '../subworkflows/local/prepare_databases'
-include { PREPARE_SPECTRA   } from '../subworkflows/local/prepare_spectra'
+include { PREPARE_SPECTRA } from '../subworkflows/local/prepare_spectra'
+include { SPECTRA_IDENTIFICATION } from '../subworkflows/local/spectra_identification'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -22,9 +24,10 @@ workflow MSPEPID {
     fasta // string: path to fasta file
     entrapment_fold // integer: fold for entrapment generation, 0 for none
     skip_decoy_generation // boolean: whether to skip decoy generation
+    precursor_tol_ppm // integer: Precursor mass tolerance in ppm for spectra identification
+    fragment_tol_da // float: Fragment mass tolerance in Da for spectra identification
 
     main:
-
     ch_versions = channel.empty()
 
     // create channel for fasta input
@@ -37,17 +40,28 @@ workflow MSPEPID {
         entrapment_fold,
         skip_decoy_generation,
     )
+    ch_fasta_db = PREPARE_DATABASES.out.fasta
 
     // prepare the spectra files
-    PREPARE_SPECTRA (
+    PREPARE_SPECTRA(
         ch_samplesheet
     )
+    ch_prepared_spectra = PREPARE_SPECTRA.out.mzmls.join(PREPARE_SPECTRA.out.uncompressed, by: 0)
+
+    // spectra identification
+    SPECTRA_IDENTIFICATION(
+        ch_fasta_db,
+        ch_prepared_spectra,
+        precursor_tol_ppm,
+        fragment_tol_da,
+    )
+
 
     //
     // Collate and save software versions
     //
-    def topic_versions = channel
-        .topic("versions")
+    def topic_versions = channel.topic("versions")
+origin/dev
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path
