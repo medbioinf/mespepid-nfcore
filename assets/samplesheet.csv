@@ -1,9 +1,0 @@
-ID,spectrum_file
-1,assets/testfiles/sample1.d
-2,assets/testfiles/sample2.raw
-3,assets/testfiles/sample3.RAW
-4,assets/testfiles/sample4.mzML
-5,assets/testfiles/sample5.mzml
-6,assets/testfiles/sample6.raw.gz
-7,assets/testfiles/sample7.raw.tar.gz
-8,assets/testfiles/sample8.raw.zip
