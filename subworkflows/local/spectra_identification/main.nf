@@ -35,8 +35,15 @@ workflow SPECTRA_IDENTIFICATION {
     PSMUTILSCONVERSIONS(
         ch_identifications
     )
+    ch_versions = ch_versions.mix(PSMUTILSCONVERSIONS.out.versions_psm_utils)
+    ch_versions = ch_versions.mix(PSMUTILSCONVERSIONS.out.versions_python)
+
+    ch_psmutils_tsvs = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, file -> [meta + [status: 'psmutils'], file] }
+    ch_searchengine_pins = PSMUTILSCONVERSIONS.out.pin.map { meta, file -> [meta + [status: 'pin'], file] }
 
     emit:
     versions = ch_versions
-    identifications = ch_identifications
+    raw_identifications = ch_identifications
+    psmutils_tsvs = ch_psmutils_tsvs
+    searchengine_pins = ch_searchengine_pins
 }
