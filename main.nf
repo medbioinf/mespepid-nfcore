@@ -45,6 +45,9 @@ workflow NFCORE_MSPEPID {
         params.fragment_tol_da,
         params.run_comet,
         params.run_percolator,
+        params.run_ms2rescore,
+        params.ms2rescore_model,
+        params.ms2rescore_model_dir,
     )
 }
 /*

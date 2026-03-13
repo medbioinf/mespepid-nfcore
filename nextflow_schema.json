@@ -102,6 +102,21 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Enables rescoring with Percolator."
+                },
+                "run_ms2rescore": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables rescoring with MS2Rescore."
+                },
+                "ms2rescore_model": {
+                    "type": "string",
+                    "default": "HCD",
+                    "description": "The MS2PIP model to use for MS2REscore. Models can be found here: https://ms2pip.readthedocs.io/en/latest/prediction-models/"
+                },
+                "ms2rescore_model_dir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Optional directory with pre-downloaded MS2PIP model files. If the requested model is missing there, it is downloaded into the task work directory."
                 }
             }
         },

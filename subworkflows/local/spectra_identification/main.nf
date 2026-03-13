@@ -1,7 +1,6 @@
 include { COMET } from '../../../modules/local/comet/main'
 
 include { PSMUTILSCONVERSIONS } from '../../../modules/local/psmutilsconversions/main'
-include { PERCOLATOR } from '../../../modules/local/percolator/main'
 
 workflow SPECTRA_IDENTIFICATION {
     take:
@@ -10,10 +9,8 @@ workflow SPECTRA_IDENTIFICATION {
     precursor_tol_ppm
     fragment_tol_da
     run_comet
-    run_percolator
 
     main:
-
     ch_versions = channel.empty()
 
     // TODO: this will become the identifications, probably with some meta mapping?
@@ -45,15 +42,6 @@ workflow SPECTRA_IDENTIFICATION {
 
     ch_psmutils_tsvs = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, file -> [meta + [status: 'psmutils'], file] }
     ch_searchengine_pins = PSMUTILSCONVERSIONS.out.pin.map { meta, file -> [meta + [status: 'pin'], file] }
-
-    // run percolator, if enabled
-    if (run_percolator) {
-        ch_percolator_in = ch_searchengine_pins.map { meta, pin -> [meta + [outdir: meta.searchengine], pin] }
-        PERCOLATOR(
-            ch_percolator_in
-        )
-        ch_versions = ch_versions.mix(PERCOLATOR.out.versions_percolator)
-    }
 
     emit:
     versions = ch_versions

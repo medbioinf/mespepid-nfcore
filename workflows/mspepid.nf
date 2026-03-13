@@ -10,6 +10,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mspe
 include { PREPARE_DATABASES } from '../subworkflows/local/prepare_databases'
 include { PREPARE_SPECTRA } from '../subworkflows/local/prepare_spectra'
 include { SPECTRA_IDENTIFICATION } from '../subworkflows/local/spectra_identification'
+include { SPECTRA_RESCORING } from '../subworkflows/local/spectra_rescoring'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,6 +28,9 @@ workflow MSPEPID {
     fragment_tol_da // float: Fragment mass tolerance in Da for spectra identification
     run_comet // boolean: whether to run Comet for spectra identification
     run_percolator // boolean: whether to run Percolator for rescoring
+    run_ms2rescore // boolean: whether to run MS2Rescore for rescoring
+    ms2rescore_model // string: which MS2Rescore model to use for rescoring
+    ms2rescore_model_dir // string: optional directory containing pre-downloaded MS2PIP models
 
     main:
     ch_versions = channel.empty()
@@ -56,7 +60,18 @@ workflow MSPEPID {
         precursor_tol_ppm,
         fragment_tol_da,
         run_comet,
+    )
+
+    // spectra rescoring
+    SPECTRA_RESCORING(
+        SPECTRA_IDENTIFICATION.out.psmutils_tsvs,
+        SPECTRA_IDENTIFICATION.out.searchengine_pins,
+        ch_prepared_spectra,
+        fragment_tol_da,
         run_percolator,
+        run_ms2rescore,
+        ms2rescore_model,
+        ms2rescore_model_dir,
     )
 
     //
