@@ -7,5 +7,7 @@ testing/
 testing*
 *.pyc
 null/
+.nf-test/
+.nf-test.log*
 # Toplevel test files
 /test*
