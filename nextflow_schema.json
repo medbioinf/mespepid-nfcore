@@ -81,6 +81,30 @@
                 }
             }
         },
+        "identification_options": {
+            "title": "Select search engines to be executed",
+            "type": "object",
+            "description": "Enable/disable search engines.",
+            "properties": {
+                "run_comet": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables spectrum identification with Comet."
+                }
+            }
+        },
+        "rescoring_options": {
+            "title": "Select rescoring algorithms to be executed",
+            "type": "object",
+            "description": "Enable/disable rescoring algorithms.",
+            "properties": {
+                "run_percolator": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables rescoring with Percolator."
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -222,6 +246,12 @@
         },
         {
             "$ref": "#/$defs/general_search_parameters"
+        },
+        {
+            "$ref": "#/$defs/identification_options"
+        },
+        {
+            "$ref": "#/$defs/rescoring_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

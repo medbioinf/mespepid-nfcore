@@ -25,6 +25,8 @@ workflow MSPEPID {
     skip_decoy_generation // boolean: whether to skip decoy generation
     precursor_tol_ppm // integer: Precursor mass tolerance in ppm for spectra identification
     fragment_tol_da // float: Fragment mass tolerance in Da for spectra identification
+    run_comet // boolean: whether to run Comet for spectra identification
+    run_percolator // boolean: whether to run Percolator for rescoring
 
     main:
     ch_versions = channel.empty()
@@ -53,6 +55,8 @@ workflow MSPEPID {
         ch_prepared_spectra,
         precursor_tol_ppm,
         fragment_tol_da,
+        run_comet,
+        run_percolator,
     )
 
     //
