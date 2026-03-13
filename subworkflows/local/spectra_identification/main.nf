@@ -1,4 +1,5 @@
 include { COMET } from '../../../modules/local/comet/main'
+include { PSMUTILSCONVERSIONS } from '../../../modules/local/psmutilsconversions/main'
 
 workflow SPECTRA_IDENTIFICATION {
     take:
@@ -28,7 +29,12 @@ workflow SPECTRA_IDENTIFICATION {
         fragment_tol_da,
     )
     ch_versions = ch_versions.mix(COMET.out.versions_comet)
-    ch_identifications = COMET.out.mzid
+    ch_identifications = COMET.out.mzid.map { meta, mzid -> [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid] }
+
+    // convert search results into psm-utils format and PIN files for downstream processing
+    PSMUTILSCONVERSIONS(
+        ch_identifications
+    )
 
     emit:
     versions = ch_versions
