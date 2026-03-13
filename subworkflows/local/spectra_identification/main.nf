@@ -24,8 +24,7 @@ workflow SPECTRA_IDENTIFICATION {
     // TODO: also adapt for per-sample parameters
     ch_ident_in = ch_spectra_files.combine(ch_fasta.map { _meta, fasta -> [fasta] })
 
-
-    //TODO: only run if comet is activated
+    // run Comet, if enabled
     if (run_comet) {
         ch_comet_in = ch_ident_in.map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
         COMET(
@@ -47,7 +46,7 @@ workflow SPECTRA_IDENTIFICATION {
     ch_psmutils_tsvs = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, file -> [meta + [status: 'psmutils'], file] }
     ch_searchengine_pins = PSMUTILSCONVERSIONS.out.pin.map { meta, file -> [meta + [status: 'pin'], file] }
 
-    // run percolator for the search results
+    // run percolator, if enabled
     if (run_percolator) {
         ch_percolator_in = ch_searchengine_pins.map { meta, pin -> [meta + [outdir: meta.searchengine], pin] }
         PERCOLATOR(
