@@ -35,6 +35,8 @@ workflow NFCORE_MSPEPID {
     //
     // WORKFLOW: Run pipeline
     //
+    sage_config_template = params.sage_config_template ?: "${projectDir}/assets/default.sage.json"
+
     MSPEPID(
         samplesheet,
         params.fasta,
@@ -45,7 +47,7 @@ workflow NFCORE_MSPEPID {
         params.run_comet,
         params.run_sage,
         params.run_percolator,
-        params.sage_config_template,
+        sage_config_template,
         params.sage_prefilter_chunk_size,
         params.sage_prefilter,
     )

@@ -90,8 +90,8 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "description": "Path to the Sage params file for additional, search engine specific settings.",
-                    "default": "${projectDir}/assets/default.sage.json",
+                    "description": "Path to the Sage params file. If not given the provided default in assets is used.",
+                    "default": null,
                     "fa_icon": "fas fa-cogs"
                 },
                 "sage_prefilter": {
