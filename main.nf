@@ -32,7 +32,6 @@ workflow NFCORE_MSPEPID {
     samplesheet // channel: samplesheet read in from --input
 
     main:
-
     //
     // WORKFLOW: Run pipeline
     //
@@ -44,7 +43,11 @@ workflow NFCORE_MSPEPID {
         params.precursor_tol_ppm,
         params.fragment_tol_da,
         params.run_comet,
+        params.run_sage,
         params.run_percolator,
+        params.sage_config_template,
+        params.sage_prefilter_chunk_size,
+        params.sage_prefilter,
     )
 }
 /*

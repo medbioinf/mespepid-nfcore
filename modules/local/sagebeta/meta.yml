@@ -1,0 +1,126 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "sagebeta"
+description: "Sage: proteomics searching so fast it seems like magic"
+keywords:
+  - proteomics
+  - sage
+  - mass spectrometry
+tools:
+  - "sage":
+      description: "Protoemic search engine"
+      homepage: "https://sage-docs.vercel.app/"
+      documentation: "https://sage-docs.vercel.app/docs"
+      tool_dev_url: "https://github.com/lazear/sage"
+      doi: "10.1021/acs.jproteome.3c00486 "
+      licence:
+        - "MIT License"
+      identifier: "biotools:Sage-proteomics"
+
+input:
+  ### TODO nf-core: Add a description of all of the variables used as input
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - mzml:
+        type: file
+        description: mzML file containing the spectra to be analyzed
+        pattern: "*.mzML"
+        ontologies:
+          - edam: "http://edamontology.org/format_3244"
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - fasta:
+        type: file
+        description: Protein seqeuncess
+        pattern: "*.(fasta|fa|FASTA)"
+        ontologies:
+          - edam: "http://edamontology.org/format_1929"
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - conig:
+        type: file
+        description: Sage configuraation
+        pattern: "*.json"
+
+output:
+  ### TODO nf-core: Add a description of all of the variables used as output
+  bam:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.results.sage.tsv":
+          type: file
+          description: Identificationm results in Sage's TSV format
+          pattern: "*.result.sage.tsv"
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.results.sage.pin":
+          type: file
+          description: Identificationm results in Pecolator's input format
+          pattern: "*.result.sage.pin"
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.results.json":
+          type: file
+          description: Identificationm results in Sage's JSON format
+          pattern: "*.results.json"
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.tmt.tsv":
+          type: file
+          description: TMT Quantification Results
+          pattern: "*.tmt.tsv"
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.lfq.tsv":
+          type: file
+          description: LFQ Results
+          pattern: "*.lfq.tsv"
+  versions_sagebeta:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "sagebeta":
+          type: string
+          description: The name of the tool
+      - "sagebeta --version":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - sagebeta:
+          type: string
+          description: The name of the tool
+      - sagebeta --version:
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@di-hardt"
+maintainers:
+  - "@di-hardt"

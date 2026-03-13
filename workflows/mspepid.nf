@@ -26,7 +26,11 @@ workflow MSPEPID {
     precursor_tol_ppm // integer: Precursor mass tolerance in ppm for spectra identification
     fragment_tol_da // float: Fragment mass tolerance in Da for spectra identification
     run_comet // boolean: whether to run Comet for spectra identification
+    run_sage // boolean: whether to run Sage for spectra identification
     run_percolator // boolean: whether to run Percolator for rescoring
+    sage_config_template // path: path to sage config template
+    sage_prefilter_chunk_size // integer: chunk size for sage prefiltering
+    sage_prefilter // boolean: whether to run sage prefiltering
 
     main:
     ch_versions = channel.empty()
@@ -56,7 +60,11 @@ workflow MSPEPID {
         precursor_tol_ppm,
         fragment_tol_da,
         run_comet,
+        run_sage,
         run_percolator,
+        sage_config_template,
+        sage_prefilter_chunk_size,
+        sage_prefilter,
     )
 
     //
