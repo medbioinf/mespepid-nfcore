@@ -97,7 +97,7 @@
                 "sage_prefilter": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Whether the database should be split during Sage search. This greatly reduces the memory consumption on when using large databases (beta feature)"
+                    "description": "Whether the database should be split during Sage search. This greatly reduces memory consumption when using large databases (beta feature)"
                 },
                 "sage_prefilter_chunk_size": {
                     "type": "integer",
