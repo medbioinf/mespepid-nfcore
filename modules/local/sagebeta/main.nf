@@ -1,7 +1,7 @@
 /*
  * Runs sage search engine
- * The modules inputs/ouptus are intentionally designed to match the [existing Sage module](https://nf-co.re/modules/sageproteomics_sage/).
- * Once the existing one is updated it can be droped in place of thie local one.
+ * The modules inputs/outputs are intentionally designed to match the [existing Sage module](https://nf-co.re/modules/sageproteomics_sage/).
+ * Once the existing one is updated, it can be dropped in place of this local one.
  **/
 process SAGEBETA {
     tag "${meta.id}"
