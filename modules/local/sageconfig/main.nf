@@ -9,7 +9,7 @@ process SAGECONFIG {
     label 'process_single'
 
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE'
+        ? 'biocontainers/python:3.14'
         : 'biocontainers/python:3.14'}"
 
     input:
