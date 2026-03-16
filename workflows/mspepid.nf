@@ -61,7 +61,6 @@ workflow MSPEPID {
     // Collate and save software versions
     //
     def topic_versions = channel.topic("versions")
-origin/dev
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path

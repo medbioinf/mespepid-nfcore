@@ -1,31 +1,14 @@
-
 // TODO nf-core: If in doubt look at other nf-core/subworkflows to see how we are doing things! :)
 //               https://github.com/nf-core/modules/tree/master/subworkflows
 //               You can also ask for help via your pull request or on the #subworkflows channel on the nf-core Slack workspace:
 //               https://nf-co.re/join
 // TODO nf-core: A subworkflow SHOULD import at least two modules
 
-include { GUNZIP } from '../../../modules/nf-core/gunzip/main'
-include { TDF2MZML } from '../../../modules/local/tdf2mzml/main'
+include { GUNZIP }              from '../../../modules/nf-core/gunzip/main'
+include { TDF2MZML }            from '../../../modules/local/tdf2mzml/main'
 include { THERMORAWFILEPARSER } from '../../../modules/nf-core/thermorawfileparser/main'
-include { UNTAR } from '../../../modules/nf-core/untar/main'
-include { UNZIP } from '../../../modules/nf-core/unzip/main'
-
-
-enum Vendor {
-    BRUKER,
-    THERMO,
-    MZML,
-    UNKNOWN,
-}
-
-enum Compression {
-    GZ,
-    TAR,
-    ZIP,
-    NONE,
-    UNSUPPORTED,
-}
+include { UNTAR }               from '../../../modules/nf-core/untar/main'
+include { UNZIP }               from '../../../modules/nf-core/unzip/main'
 
 
 workflow PREPARE_SPECTRA {
@@ -34,111 +17,72 @@ workflow PREPARE_SPECTRA {
 
     main:
 
-    // map to assign vendor based on the file extension
-    def EXTENSION_TO_VENDOR_MAP = [
-        '.d': Vendor.BRUKER,
-        '.d.tar.gz': Vendor.BRUKER,
-        '.d.tar.bz2': Vendor.BRUKER,
-        '.d.zip': Vendor.BRUKER,
-        '.raw': Vendor.THERMO,
-        '.raw.zip': Vendor.THERMO,
-        '.raw.tar.gz': Vendor.THERMO,
-        '.raw.tar.bz2': Vendor.THERMO,
-        '.raw.gz': Vendor.THERMO,
-        '.mzml': Vendor.MZML,
-        '.mzml.zip': Vendor.MZML,
-        '.mzml.tar.gz': Vendor.MZML,
-        '.mzml.tar.bz2': Vendor.MZML,
-        '.mzml.gz': Vendor.MZML,
+    def VENDOR_BRUKER       = 'bruker'
+    def VENDOR_THERMO       = 'thermo'
+    def VENDOR_MZML         = 'mzml'
+    def VENDOR_UNKNOWN      = 'unknown'
 
-    def VENDOR_BRUKER = 'bruker'
-    def VENDOR_THERMO = 'thermo'
-    def VENDOR_MZML = 'mzml'
-    def VENDOR_UNKNOWN = 'unknown'
-
-    def COMPRESSION_GZ = 'gz'
-    def COMPRESSION_TAR = 'tar'
-    def COMPRESSION_ZIP = 'zip'
-    def COMPRESSION_NONE = 'none'
+    def COMPRESSION_GZ          = 'gz'
+    def COMPRESSION_TAR         = 'tar'
+    def COMPRESSION_ZIP         = 'zip'
+    def COMPRESSION_NONE        = 'none'
     def COMPRESSION_UNSUPPORTED = 'unsupported'
 
     // map to assign vendor based on the file extension
     def EXTENSION_TO_VENDOR_MAP = [
-        '.d': VENDOR_BRUKER,
-        '.d.tar.gz': VENDOR_BRUKER,
-        '.d.tar.bz2': VENDOR_BRUKER,
-        '.d.zip': VENDOR_BRUKER,
-        '.raw': VENDOR_THERMO,
-        '.raw.zip': VENDOR_THERMO,
-        '.raw.tar.gz': VENDOR_THERMO,
-        '.raw.tar.bz2': VENDOR_THERMO,
-        '.raw.gz': VENDOR_THERMO,
-        '.mzml': VENDOR_MZML,
-        '.mzml.zip': VENDOR_MZML,
-        '.mzml.tar.gz': VENDOR_MZML,
+        '.d':            VENDOR_BRUKER,
+        '.d.tar.gz':     VENDOR_BRUKER,
+        '.d.tar.bz2':    VENDOR_BRUKER,
+        '.d.zip':        VENDOR_BRUKER,
+        '.raw':          VENDOR_THERMO,
+        '.raw.zip':      VENDOR_THERMO,
+        '.raw.tar.gz':   VENDOR_THERMO,
+        '.raw.tar.bz2':  VENDOR_THERMO,
+        '.raw.gz':       VENDOR_THERMO,
+        '.mzml':         VENDOR_MZML,
+        '.mzml.zip':     VENDOR_MZML,
+        '.mzml.tar.gz':  VENDOR_MZML,
         '.mzml.tar.bz2': VENDOR_MZML,
-        '.mzml.gz': VENDOR_MZML,
-
+        '.mzml.gz':      VENDOR_MZML,
     ].asImmutable()
 
     // map to assign compression type based on the file extension
     def EXTENSION_TO_COMPRESSION_MAP = [
-
-        '.d': Compression.NONE,
-        '.d.tar.gz': Compression.TAR,
-        '.d.tar.bz2': Compression.TAR,
-        '.d.zip': Compression.ZIP,
-        '.raw': Compression.NONE,
-        '.raw.zip': Compression.ZIP,
-        '.raw.tar.gz': Compression.TAR,
-        '.raw.tar.bz2': Compression.TAR,
-        '.raw.gz': Compression.GZ,
-        '.mzml': Compression.NONE,
-        '.mzml.zip': Compression.ZIP,
-        '.mzml.tar.gz': Compression.TAR,
-        '.mzml.tar.bz2': Compression.TAR,
-        '.mzml.gz': Compression.GZ,
-
-        '.d': COMPRESSION_NONE,
-        '.d.tar.gz': COMPRESSION_TAR,
-        '.d.tar.bz2': COMPRESSION_TAR,
-        '.d.zip': COMPRESSION_ZIP,
-        '.raw': COMPRESSION_NONE,
-        '.raw.zip': COMPRESSION_ZIP,
-        '.raw.tar.gz': COMPRESSION_TAR,
-        '.raw.tar.bz2': COMPRESSION_TAR,
-        '.raw.gz': COMPRESSION_GZ,
-        '.mzml': COMPRESSION_NONE,
-        '.mzml.zip': COMPRESSION_ZIP,
-        '.mzml.tar.gz': COMPRESSION_TAR,
+        '.d':            COMPRESSION_NONE,
+        '.d.tar.gz':     COMPRESSION_TAR,
+        '.d.tar.bz2':    COMPRESSION_TAR,
+        '.d.zip':        COMPRESSION_ZIP,
+        '.raw':          COMPRESSION_NONE,
+        '.raw.zip':      COMPRESSION_ZIP,
+        '.raw.tar.gz':   COMPRESSION_TAR,
+        '.raw.tar.bz2':  COMPRESSION_TAR,
+        '.raw.gz':       COMPRESSION_GZ,
+        '.mzml':         COMPRESSION_NONE,
+        '.mzml.zip':     COMPRESSION_ZIP,
+        '.mzml.tar.gz':  COMPRESSION_TAR,
         '.mzml.tar.bz2': COMPRESSION_TAR,
-        '.mzml.gz': COMPRESSION_GZ,
-
+        '.mzml.gz':      COMPRESSION_GZ,
     ].asImmutable()
 
     ch_versions = channel.empty()
 
-
-    // add the vendor information to the metadata based on the file extension, if the extension is unknown assign Vendor.UNKNOWN
+    // add the vendor information to the metadata based on the file extension, if the extension is unknown assign VENDOR_UNKNOWN
     ch_spectra = ch_spectra.map { meta, path ->
         def path_split = path.name.toLowerCase().tokenize('.')
         def full_extension = "." + path_split[1..-1].join('.')
-        meta.vendor = EXTENSION_TO_VENDOR_MAP[full_extension] ? EXTENSION_TO_VENDOR_MAP[full_extension] : Vendor.UNKNOWN
-        meta.compression = EXTENSION_TO_COMPRESSION_MAP[full_extension] ? EXTENSION_TO_COMPRESSION_MAP[full_extension] : Compression.UNSUPPORTED
-
-    
+        meta.vendor      = EXTENSION_TO_VENDOR_MAP[full_extension]      ?: VENDOR_UNKNOWN
+        meta.compression = EXTENSION_TO_COMPRESSION_MAP[full_extension] ?: COMPRESSION_UNSUPPORTED
         return [meta, path]
     }
 
-    // Filter the spectra files which are compresseds
+    // Filter the spectra files which are compressed
     ch_spectra
         .branch { item ->
-            gzipped: item[0].compression == COMPRESSION_GZ
-            tarred: item[0].compression == COMPRESSION_TAR
-            zipped: item[0].compression == COMPRESSION_ZIP
+            gzipped:      item[0].compression == COMPRESSION_GZ
+            tarred:       item[0].compression == COMPRESSION_TAR
+            zipped:       item[0].compression == COMPRESSION_ZIP
             uncompressed: item[0].compression == COMPRESSION_NONE
-
-            unsupported: true
+            unsupported:  true
         }
         .set { ch_branched_spectra }
 
@@ -156,8 +100,7 @@ workflow PREPARE_SPECTRA {
 
     UNTAR(ch_branched_spectra.tarred)
     ch_versions = ch_versions.mix(UNTAR.out.versions_untar)
-
-    ch_untarred_spectra = UNTAR.out.untar.map { meta, path -> path.isFile() || meta.vendor == Vendor.BRUKER ? [meta, path] : [meta, path.listFiles().first()] }
+    ch_untarred_spectra = UNTAR.out.untar.map { meta, path -> path.isFile() || meta.vendor == VENDOR_BRUKER ? [meta, path] : [meta, path.listFiles().first()] }
     ch_uncompressed_spectra = ch_uncompressed_spectra.mix(ch_untarred_spectra)
 
     UNZIP(ch_branched_spectra.zipped)
@@ -174,9 +117,9 @@ workflow PREPARE_SPECTRA {
     // Branch into the different kind of spectra files and convert to mzML if necessary
     ch_uncompressed_spectra
         .branch { item ->
-            brukerd: item[0].vendor == VENDOR_BRUKER
+            brukerd:   item[0].vendor == VENDOR_BRUKER
             thermoraw: item[0].vendor == VENDOR_THERMO
-            mzml: item[0].vendor == VENDOR_MZML
+            mzml:      item[0].vendor == VENDOR_MZML
         }
         .set { ch_branched_uncompressed_spectra }
 
@@ -191,7 +134,7 @@ workflow PREPARE_SPECTRA {
     ch_mzmls = ch_mzmls.mix(THERMORAWFILEPARSER.out.spectra)
 
     emit:
-    versions = ch_versions
-    mzmls = ch_mzmls
+    versions     = ch_versions
+    mzmls        = ch_mzmls
     uncompressed = ch_uncompressed_spectra
 }
