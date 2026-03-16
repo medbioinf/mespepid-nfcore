@@ -21,14 +21,15 @@ process SAGECONFIG {
 
     output:
     path ("adjusted.sage.json"), emit: config
-    tuple val("${task.process}"), val('Python'), val("3.14.3"), topic: versions, emit: versions_sageconfig
+    tuple val("${task.process}"), val('Python'), eval('python --version | sed "s/Python //"'), topic: versions, emit: versions_sageconfig
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
+    def args = task.ext.args ?: ''
     """
-#!/usr/bin/env python
+cat << 'PY' > adjust_sage_config.py
 import json
 
 # Opening JSON file
@@ -48,6 +49,9 @@ json_object["database"]["prefilter_low_memory"] = False
 # Writing to sample.json
 with open("./adjusted.sage.json", "w") as outfile:
     json.dump(json_object, outfile)
+PY
+
+python ${args} adjust_sage_config.py
     """
 
     stub:
