@@ -37,7 +37,7 @@ input:
     - fasta:
         type: file
         description: Protein sequences
-        pattern: "*.(fasta|fa|FASTA)"
+        pattern: "*.{fasta,fa,FASTA}"
         ontologies:
           - edam: "http://edamontology.org/format_1929"
   - - meta:
@@ -45,7 +45,7 @@ input:
         description: |
           Groovy Map containing sample information
           e.g. `[ id:'sample1' ]`
-    - conig:
+    - config:
         type: file
         description: Sage configuraation
         pattern: "*.json"
