@@ -36,7 +36,7 @@ input:
           e.g. `[ id:'sample1' ]`
     - fasta:
         type: file
-        description: Protein seqeuncess
+        description: Protein sequences
         pattern: "*.(fasta|fa|FASTA)"
         ontologies:
           - edam: "http://edamontology.org/format_1929"
@@ -60,7 +60,7 @@ output:
             e.g. `[ id:'sample1' ]`
       - "*.results.sage.tsv":
           type: file
-          description: Identificationm results in Sage's TSV format
+          description: Identifications results in Sage's TSV format
           pattern: "*.result.sage.tsv"
     - - meta:
           type: map
@@ -69,7 +69,7 @@ output:
             e.g. `[ id:'sample1' ]`
       - "*.results.sage.pin":
           type: file
-          description: Identificationm results in Pecolator's input format
+          description: Identifications results in Pecolator's input format
           pattern: "*.result.sage.pin"
     - - meta:
           type: map
@@ -78,7 +78,7 @@ output:
             e.g. `[ id:'sample1' ]`
       - "*.results.json":
           type: file
-          description: Identificationm results in Sage's JSON format
+          description: Identifications results in Sage's JSON format
           pattern: "*.results.json"
     - - meta:
           type: map
@@ -102,10 +102,10 @@ output:
     - - "${task.process}":
           type: string
           description: The name of the process
-      - "sagebeta":
+      - "sage":
           type: string
           description: The name of the tool
-      - "sagebeta --version":
+      - "sage --version":
           type: eval
           description: The expression to obtain the version of the tool
 
@@ -114,10 +114,10 @@ topics:
     - - ${task.process}:
           type: string
           description: The name of the process
-      - sagebeta:
+      - sage:
           type: string
           description: The name of the tool
-      - sagebeta --version:
+      - "sage --version":
           type: eval
           description: The expression to obtain the version of the tool
 authors:

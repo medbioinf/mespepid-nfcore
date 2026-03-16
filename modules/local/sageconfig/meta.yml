@@ -45,7 +45,7 @@ output:
       - "sageconfig":
           type: string
           description: The name of the tool
-      - "sageconfig --version":
+      - 'python --version | sed "s/Python //"':
           type: eval
           description: The expression to obtain the version of the tool
 
@@ -57,7 +57,7 @@ topics:
       - sageconfig:
           type: string
           description: The name of the tool
-      - sageconfig --version:
+      - 'python --version | sed "s/Python //"':
           type: eval
           description: The expression to obtain the version of the tool
 authors:
