@@ -1,7 +1,6 @@
 /*
  * Adjust the default Sage config with the given search params
  *
- * Attention: Version is not etermind by `eval`, as it is only available with bash process script not with interpreter (#!/usr/bin/env python/)
  **/
 
 process SAGECONFIG {
