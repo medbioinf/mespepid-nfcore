@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "sageconfig"
+description: "Sage configuration module"
+keywords:
+  - proteomics
+  - sage
+  - configuration
+  - mass spectrometry
+tools:
+  - "python":
+      description: "Sage configuration tool for proteomics data analysis"
+      homepage: "https://python.org"
+      documentation: "https://www.python.org/doc/"
+      licence:
+        - "PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2"
+
+input:
+  - config_template:
+      type: file
+      description: Sage configuration json
+      pattern: "*.json"
+  - prefilter_chunk_size:
+      type: integer
+      description: Chunk size for prefiltering
+  - prefilter:
+      type: boolean
+      description: If Sage should be run with prefiltering
+  - precursor_tol_ppm:
+      type: integer
+      description: Precursor tolerance in ppm
+  - fragment_tol_da:
+      type: float
+      description: Fragment tolerance in Dalton
+
+output:
+  config:
+    - - "adjusted.sage.json":
+          type: file
+          description: Adjusted Sage configuration json file
+          pattern: "*.json"
+  versions_python:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "Python":
+          type: string
+          description: The name of the tool
+      - 'python --version | sed "s/Python //"':
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - Python:
+          type: string
+          description: The name of the tool
+      - 'python --version | sed "s/Python //"':
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@di-hardt"
+maintainers:
+  - "@di-hardt"

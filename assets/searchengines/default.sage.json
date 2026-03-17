@@ -1,0 +1,51 @@
+{
+    "database": {
+        "bucket_size": 8192,
+        "enzyme": {
+            "missed_cleavages": 2,
+            "min_len": 5,
+            "max_len": 60,
+            "cleave_at": "KR",
+            "restrict": "P",
+            "c_terminal": true
+        },
+        "fragment_min_mz": 150.0,
+        "fragment_max_mz": 2000.0,
+        "peptide_min_mass": 500.0,
+        "peptide_max_mass": 5000.0,
+        "ion_kinds": ["b", "y"],
+        "min_ion_index": 2,
+        "static_mods": {
+            "C": 57.0215
+        },
+        "variable_mods": {
+            "M": [15.9949]
+        },
+        "max_variable_mods": 2,
+        "decoy_tag": "DECOY_",
+        "generate_decoys": false,
+        "fasta": "fake_path.fasta",
+        "prefilter_chunk_size": 0,
+        "prefilter": false,
+        "prefilter_low_memory": false
+    },
+    "precursor_tol": {
+        "ppm": [-20, 20]
+    },
+    "fragment_tol": {
+        "da": [-0.02, 0.02]
+    },
+    "precursor_charge": [2, 4],
+    "isotope_errors": [-1, 2],
+    "deisotope": false,
+    "chimera": false,
+    "wide_window": false,
+    "predict_rt": false,
+    "min_peaks": 15,
+    "max_peaks": 150,
+    "min_matched_peaks": 4,
+    "max_fragment_charge": 2,
+    "report_psms": 5,
+    "output_directory": "./",
+    "mzml_paths": ["fake/path/to1.mzML", "fake/path/to2.mzML"]
+}
