@@ -33,7 +33,7 @@ input:
       description: Fragment tolerance in Dalton
 
 output:
-  bam:
+  config:
     - - "adjusted.sage.json":
           type: file
           description: Adjusted Sage configuration json file

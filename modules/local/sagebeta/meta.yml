@@ -47,12 +47,12 @@ input:
           e.g. `[ id:'sample1' ]`
     - config:
         type: file
-        description: Sage configuraation
+        description: Sage configuration
         pattern: "*.json"
 
 output:
   ### TODO nf-core: Add a description of all of the variables used as output
-  bam:
+  tsv:
     - - meta:
           type: map
           description: |
@@ -62,6 +62,7 @@ output:
           type: file
           description: Identifications results in Sage's TSV format
           pattern: "*.results.sage.tsv"
+  pin:
     - - meta:
           type: map
           description: |
@@ -71,6 +72,7 @@ output:
           type: file
           description: Identifications results in Percolator's input format
           pattern: "*.results.sage.pin"
+  json:
     - - meta:
           type: map
           description: |
@@ -80,6 +82,7 @@ output:
           type: file
           description: Identifications results in Sage's JSON format
           pattern: "*.results.json"
+  tmt_tsv:
     - - meta:
           type: map
           description: |
@@ -89,6 +92,7 @@ output:
           type: file
           description: TMT Quantification Results
           pattern: "*.tmt.tsv"
+  lfq_tsv:
     - - meta:
           type: map
           description: |

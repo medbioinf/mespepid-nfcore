@@ -90,8 +90,8 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "description": "Path to the Sage params file. If not given the provided default in assets is used.",
-                    "default": null,
+                    "description": "Path to the Sage params file. If an empty String is given, the provided default in assets is used.",
+                    "default": "",
                     "fa_icon": "fas fa-cogs"
                 },
                 "sage_prefilter": {
