@@ -46,6 +46,7 @@ workflow NFCORE_MSPEPID {
         params.run_comet,
         params.run_sage,
         params.run_percolator,
+        params.comet_config_template,
         params.sage_config_template,
         params.sage_prefilter_chunk_size,
         params.sage_prefilter,

@@ -120,6 +120,13 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Enables spectrum identification with Sage."
+                },
+                "comet_config_template": {
+                    "type": "string",
+                    "default": null,
+                    "pattern": ".comet.params$",
+                    "description": "Template file for Comet params",
+                    "help_text": "This is the default comet parameters file. Here, additional parameters can be set, which are neither passed by common runtime (threads, fasta, ...) or by common search engine parameters."
                 }
             }
         },
