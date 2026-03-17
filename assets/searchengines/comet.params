@@ -1,4 +1,4 @@
-# comet_version 2024.01 rev. 0 (f00df0c)
+# comet_version 2026.01 rev. 1 (9df704c)
 # Comet MS/MS search engine parameters file.
 # Everything following the '#' symbol is treated as a comment.
 #
@@ -6,6 +6,9 @@ database_name = /some/path/db.fasta
 decoy_search = 0                       # 0=no (default), 1=internal decoy concatenated, 2=internal decoy separate
 
 num_threads = 0                        # 0=poll CPU to set num threads; else specify num threads directly (max 128)
+
+spectral_library_name =
+#spectral_library_ms_level = 1
 
 #
 # PEFF - PSI Extended FASTA Format
@@ -21,7 +24,7 @@ fragindex_min_ions_report = 3          # minimum number of matched fragment ion 
 fragindex_num_spectrumpeaks = 100      # number of peaks from spectrum to use for fragment ion index matching
 fragindex_min_fragmentmass = 200.0     # low mass cutoff for fragment ions
 fragindex_max_fragmentmass = 2000.0    # high mass cutoff for fragment ions
-fragindex_skipreadprecursors = 0       # high mass cutoff for fragment ions
+fragindex_skipreadprecursors = 0       # 0=read precursors to limit fragment ion index, 1=skip reading precursors
 
 #
 # masses
@@ -66,6 +69,7 @@ variable_mod14 = 0.0 X 0 3 -1 0 0 0.0
 variable_mod15 = 0.0 X 0 3 -1 0 0 0.0
 max_variable_mods_in_peptide = 5
 require_variable_mod = 0
+protein_modslist_file =                # limit variable mods to subset of specified proteins if this file is specified & present
 
 #
 # fragment ions
@@ -89,11 +93,12 @@ use_NL_ions = 0                        # 0=no, 1=yes to consider NH3/H2O neutral
 # output
 #
 output_sqtfile = 0                     # 0=no, 1=yes  write sqt file
-output_txtfile = 0                     # 0=no, 1=yes  write tab-delimited txt file
+output_txtfile = 0                     # 0=no, 1=yes, 2=Crux-formatted  write tab-delimited txt file
 output_pepxmlfile = 1                  # 0=no, 1=yes  write pepXML file
 output_mzidentmlfile = 0               # 0=no, 1=yes  write mzIdentML file
 output_percolatorfile = 0              # 0=no, 1=yes  write Percolator pin file
 print_expect_score = 1                 # 0=no, 1=yes to replace Sp with expect in out & sqt
+print_ascorepro_score = 1              # 0=no, 0 to 5 to localize variable_mod01 to _mod05; -1 to localize all variable mods
 num_output_lines = 5                   # num peptide results to show
 
 #
@@ -110,9 +115,11 @@ activation_method = ALL                # activation method; used if activation m
 #
 digest_mass_range = 600.0 5000.0       # MH+ peptide mass range to analyze
 peptide_length_range = 5 50            # minimum and maximum peptide length to analyze (default min 1 to allowed max 51)
+pinfile_protein_delimiter =            # blank = default 'tab' delimiter between proteins; enter a char/string to use in place of the tab; Percolator pin output only
 num_results = 100                      # number of results to store internally for Sp rank only; if Sp rank is not used, set this to num_output_lines
 max_duplicate_proteins = 10            # maximum number of additional duplicate protein names to report for each peptide ID; -1 reports all duplicates
 max_fragment_charge = 3                # set maximum fragment charge state to analyze (allowed max 5)
+min_precursor_charge = 1               # set minimum precursor charge state to analyze (1 if missing)
 max_precursor_charge = 6               # set maximum precursor charge state to analyze (allowed max 9)
 clip_nterm_methionine = 0              # 0=leave protein sequences as-is; 1=also consider sequence w/o N-term methionine
 spectrum_batch_size = 15000            # max. # of spectra to search at a time; 0 to search the entire scan range in one loop
@@ -124,10 +131,11 @@ mass_offsets =                         # one or more mass offsets to search (val
 # spectral processing
 #
 minimum_peaks = 10                     # required minimum number of peaks in spectrum to search (default 10)
-minimum_intensity = 0                  # minimum intensity value to read in
+minimum_intensity = 0                 # minimum intensity value to read in
 remove_precursor_peak = 0              # 0=no, 1=yes, 2=all charge reduced precursor peaks (for ETD), 3=phosphate neutral loss peaks
 remove_precursor_tolerance = 1.5       # +- Da tolerance for precursor removal
 clear_mz_range = 0.0 0.0               # clear out all peaks in the specified m/z range e.g. remove reporter ion region of TMT spectra
+percentage_base_peak = 0.0             # specify a percentage (e.g. "0.05" for 5%) of the base peak intensity as a minimum intensity threshold
 
 #
 # static modifications
@@ -175,9 +183,9 @@ add_Z_user_amino_acid = 0.0000         # added to Z - avg.   0.0000, mono.   0.0
 3.  Lys_C                  1      K           P
 4.  Lys_N                  0      K           -
 5.  Arg_C                  1      R           P
-6.  Asp_N                  0      D           -
+6.  Asp_N                  0      DN          -
 7.  CNBr                   1      M           -
-8.  Glu_C                  1      DE          P
-9.  PepsinA                1      FL          P
+8.  Asp-N_ambic            1      DE          -
+9.  PepsinA                1      FL          -
 10. Chymotrypsin           1      FWYL        P
 11. No_cut                 1      @           @
