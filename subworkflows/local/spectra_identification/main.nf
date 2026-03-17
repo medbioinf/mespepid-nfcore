@@ -52,7 +52,7 @@ workflow SPECTRA_IDENTIFICATION {
             precursor_tol_ppm,
             fragment_tol_da,
         )
-        ch_versions = ch_versions.mix(SAGECONFIG.out.versions_sageconfig)
+        ch_versions = ch_versions.mix(SAGECONFIG.out.versions_python)
 
         ch_sage_spectra = ch_spectra_files.map { meta, mzml, _raw_spectra -> [meta, mzml] }
         // add empty meta information for compatibility and convert to value channel

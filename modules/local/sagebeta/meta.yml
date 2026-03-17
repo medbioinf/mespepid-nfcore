@@ -61,7 +61,7 @@ output:
       - "*.results.sage.tsv":
           type: file
           description: Identifications results in Sage's TSV format
-          pattern: "*.result.sage.tsv"
+          pattern: "*.results.sage.tsv"
     - - meta:
           type: map
           description: |
@@ -69,8 +69,8 @@ output:
             e.g. `[ id:'sample1' ]`
       - "*.results.sage.pin":
           type: file
-          description: Identifications results in Pecolator's input format
-          pattern: "*.result.sage.pin"
+          description: Identifications results in Percolator's input format
+          pattern: "*.results.sage.pin"
     - - meta:
           type: map
           description: |

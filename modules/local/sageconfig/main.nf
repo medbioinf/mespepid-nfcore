@@ -20,7 +20,7 @@ process SAGECONFIG {
 
     output:
     path ("adjusted.sage.json"), emit: config
-    tuple val("${task.process}"), val('Python'), eval('python --version | sed "s/Python //"'), topic: versions, emit: versions_sageconfig
+    tuple val("${task.process}"), val('Python'), eval('python --version | sed "s/Python //"'), topic: versions, emit: versions_python
 
     when:
     task.ext.when == null || task.ext.when

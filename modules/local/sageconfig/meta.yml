@@ -38,11 +38,11 @@ output:
           type: file
           description: Adjusted Sage configuration json file
           pattern: "*.json"
-  versions_sageconfig:
+  versions_python:
     - - "${task.process}":
           type: string
           description: The name of the process
-      - "sageconfig":
+      - "Python":
           type: string
           description: The name of the tool
       - 'python --version | sed "s/Python //"':
@@ -54,7 +54,7 @@ topics:
     - - ${task.process}:
           type: string
           description: The name of the process
-      - sageconfig:
+      - Python:
           type: string
           description: The name of the tool
       - 'python --version | sed "s/Python //"':
