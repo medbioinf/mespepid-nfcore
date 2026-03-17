@@ -43,8 +43,10 @@ workflow SPECTRA_IDENTIFICATION {
     }
 
     if (run_sage) {
+        // TODO: allow per sample config files
+        ch_sage_config_template = sage_config_template ? channel.fromPath(sage_config_template, checkIfExists: true) : channel.fromPath("${projectDir}/assets/searchengines/default.sage.json", checkIfExists: true)
         SAGECONFIG(
-            sage_config_template,
+            ch_sage_config_template,
             sage_prefilter_chunk_size,
             sage_prefilter,
             precursor_tol_ppm,
