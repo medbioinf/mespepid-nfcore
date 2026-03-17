@@ -31,7 +31,13 @@ process SAGEBETA {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    RAYON_NUM_THREADS=${task.cpus.intValue()} sage -f ${fasta} --batch-size ${task.cpus.intValue()} --write-pin --output_directory ./ ${args} ${config} ${mzml}
+    RAYON_NUM_THREADS=${task.cpus.intValue()} sage \\
+        -f ${fasta} \\
+        --batch-size ${task.cpus.intValue()} \\
+        --output_directory ./ \\
+        ${args} \\
+        ${config} \\
+        ${mzml}
 
     for file in results.sage.tsv results.sage.pin results.json tmt.tsv lfq.tsv; do
         if [ -f "\$file" ]; then
