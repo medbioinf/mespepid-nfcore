@@ -56,7 +56,7 @@ workflow SPECTRA_IDENTIFICATION {
 
         ch_sage_spectra = ch_spectra_files.map { meta, mzml, _raw_spectra -> [meta, mzml] }
         // add empty meta information for compatibility and convert to value channel
-        ch_sage_config = SAGECONFIG.out.config.map { config -> [["ID": "SAGE_CONFIG"], config] }
+        ch_sage_config = SAGECONFIG.out.config.map { config -> [["ID": "SAGE_CONFIG"], config] }.first()
         // convert to value channel
         ch_sage_fasta = ch_fasta.first()
 
