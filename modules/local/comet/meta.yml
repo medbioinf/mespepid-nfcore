@@ -108,7 +108,7 @@ output:
       - "comet":
           type: string
           description: The name of the tool
-      - "comet | head -2 | tail -1 | sed 's;.*\"\\(.*\\).*\";\\1;g'":
+      - "comet 2>&1 | head -2 | tail -1 | sed 's;.*\"\\(.*\\).*\";\\1;g'":
           type: eval
           description: The expression to obtain the version of the tool
 
@@ -120,7 +120,7 @@ topics:
       - comet:
           type: string
           description: The name of the tool
-      - comet | head -2 | tail -1 | sed 's;.*"\(.*\).*";\1;g':
+      - comet 2>&1 | head -2 | tail -1 | sed 's;.*"\(.*\).*";\1;g':
           type: eval
           description: The expression to obtain the version of the tool
 authors:

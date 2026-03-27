@@ -7,8 +7,8 @@ process COMET {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://depot.galaxyproject.org/singularity/comet-ms:2024011--hb319eff_0'
-        : 'medbioinf/comet-ms:v2026.01.1'}"
+        ? 'https://depot.galaxyproject.org/singularity/comet-ms:2026.01.1--h9ee0642_0'
+        : 'biocontainers/comet-ms:2026.01.1--h9ee0642_0'}"
 
     input:
     tuple val(meta), path(mzml), path(fasta), path(comet_params)
@@ -20,7 +20,7 @@ process COMET {
     tuple val(meta), path("*.pep.xml"), emit: pepxml, optional: true
     tuple val(meta), path("*.mzid"), emit: mzid, optional: true
     tuple val(meta), path("*.pin"), emit: pin, optional: true
-    tuple val("${task.process}"), val('comet'), eval("comet | head -2 | tail -1 | sed 's;.*\"\\(.*\\).*\";\\1;g'"), topic: versions, emit: versions_comet
+    tuple val("${task.process}"), val('comet'), eval("comet 2>&1 | head -2 | tail -1 | sed 's;.*\"\\(.*\\).*\";\\1;g'"), topic: versions, emit: versions_comet
 
     when:
     task.ext.when == null || task.ext.when
