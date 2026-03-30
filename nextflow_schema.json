@@ -84,6 +84,60 @@
                 }
             }
         },
+        "sage_search_parameters": {
+            "title": "Sage search parameters",
+            "type": "object",
+            "description": "Search parameters specific to Sage",
+            "properties": {
+                "sage_config_template": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Path to the Sage params file. If an empty String is given, the provided default in assets is used.",
+                    "default": "",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "sage_prefilter": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the database should be split during Sage search. This greatly reduces memory consumption when using large databases (beta feature)"
+                },
+                "sage_prefilter_chunk_size": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of proteins per database chunk when prefiltering is active."
+                }
+            }
+        },
+        "identification_options": {
+            "title": "Select search engines to be executed",
+            "type": "object",
+            "description": "Enable/disable search engines.",
+            "properties": {
+                "run_comet": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables spectrum identification with Comet."
+                },
+                "run_sage": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables spectrum identification with Sage."
+                }
+            }
+        },
+        "rescoring_options": {
+            "title": "Select rescoring algorithms to be executed",
+            "type": "object",
+            "description": "Enable/disable rescoring algorithms.",
+            "properties": {
+                "run_percolator": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables rescoring with Percolator."
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -242,6 +296,15 @@
         },
         {
             "$ref": "#/$defs/general_search_parameters"
+        },
+        {
+            "$ref": "#/$defs/identification_options"
+        },
+        {
+            "$ref": "#/$defs/sage_search_parameters"
+        },
+        {
+            "$ref": "#/$defs/rescoring_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"
