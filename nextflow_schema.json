@@ -89,9 +89,7 @@
                 "sage_config_template": {
                     "type": "string",
                     "format": "file-path",
-                    "exists": true,
-                    "description": "Path to the Sage params file. If an empty String is given, the provided default in assets is used.",
-                    "default": "",
+                    "description": "Path to the Sage params file. If not set or null, the provided default in assets is used.",
                     "fa_icon": "fas fa-cogs"
                 },
                 "sage_prefilter": {
@@ -124,9 +122,7 @@
                 "comet_config_template": {
                     "type": "string",
                     "format": "file-path",
-                    "exists": true,
-                    "description": "This is the default comet parameters file. In this file, parameters can be set, which are neither passed by common runtime (threads, fasta, ...) or by common search engine parameters. If an empty String is given, the provided default in assets is used.",
-                    "default": "",
+                    "description": "This is the default comet parameters file. In this file, parameters can be set, which are neither passed by common runtime (threads, fasta, ...) or by common search engine parameters. If not set or null, the provided default in assets is used.",
                     "fa_icon": "fas fa-cogs"
                 }
             }
