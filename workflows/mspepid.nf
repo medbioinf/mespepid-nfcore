@@ -27,8 +27,13 @@ workflow MSPEPID {
     precursor_tol_ppm // integer: Precursor mass tolerance in ppm for spectra identification
     fragment_tol_da // float: Fragment mass tolerance in Da for spectra identification
     run_comet // boolean: whether to run Comet for spectra identification
+    run_sage // boolean: whether to run Sage for spectra identification
     run_percolator // boolean: whether to run Percolator for rescoring
     run_ms2rescore // boolean: whether to run MS2Rescore for rescoring
+    comet_config_template // string: path to comet config template, or null to use created default config
+    sage_config_template // path: path to sage config template
+    sage_prefilter_chunk_size // integer: chunk size for sage prefiltering
+    sage_prefilter // boolean: whether to run sage prefiltering
     ms2rescore_model // string: which MS2Rescore model to use for rescoring
     ms2rescore_model_dir // string: optional directory containing pre-downloaded MS2PIP models
 
@@ -60,6 +65,11 @@ workflow MSPEPID {
         precursor_tol_ppm,
         fragment_tol_da,
         run_comet,
+        run_sage,
+        comet_config_template,
+        sage_config_template,
+        sage_prefilter_chunk_size,
+        sage_prefilter,
     )
 
     // spectra rescoring

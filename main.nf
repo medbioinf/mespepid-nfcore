@@ -44,8 +44,13 @@ workflow NFCORE_MSPEPID {
         params.precursor_tol_ppm,
         params.fragment_tol_da,
         params.run_comet,
+        params.run_sage,
         params.run_percolator,
         params.run_ms2rescore,
+        params.comet_config_template,
+        params.sage_config_template,
+        params.sage_prefilter_chunk_size,
+        params.sage_prefilter,
         params.ms2rescore_model,
         params.ms2rescore_model_dir,
     )
