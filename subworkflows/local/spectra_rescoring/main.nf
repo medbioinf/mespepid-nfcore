@@ -21,11 +21,10 @@ workflow SPECTRA_RESCORING {
     ch_psmutils_tsvs_by_id = psmutils_tsvs.map { meta, psmutils_tsv -> [meta.id, meta, psmutils_tsv] }
 
     ch_rescoring_in = ch_prepared_spectra_by_id
-        .join(ch_psmutils_tsvs_by_id, by: 0)
+        .combine(ch_psmutils_tsvs_by_id, by: 0)
         .map { _id, spectra_meta, mzml, raw_spectra, psm_meta, psmutils_tsv ->
             [spectra_meta + psm_meta + [outdir: psm_meta.searchengine], mzml, raw_spectra, psmutils_tsv]
         }
-
     ch_rescoring_out = channel.empty()
 
     // run percolator, if enabled
@@ -53,20 +52,22 @@ workflow SPECTRA_RESCORING {
             ms2rescore_model_dir_val = channel.value(file(ms2rescore_model_dir, checkIfExists: true))
         }
 
-        // TODO: set spectrum_id_pattern by the searchengine as a meta
         // TODO: set chunk size as ext.args
         MS2RESCORE_RUNMS2RESCORE(
             ch_rescoring_in,
             ms2rescore_model,
             ms2rescore_model_dir_val,
             fragment_tol_da,
-            '.*scan=(\\d+)$',
             1000,
         )
         ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions_ms2rescore)
         ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions_python)
 
-        ch_percolator_ms2rescore_in = MS2RESCORE_RUNMS2RESCORE.out.pin.map { meta, pin -> [meta + [outdir: meta.searchengine + "/ms2rescore"], pin] }
+        ch_percolator_ms2rescore_in = MS2RESCORE_RUNMS2RESCORE.out.pin.map { meta, pin ->
+            [meta + [status: 'ms2rescore', outdir: meta.searchengine + "/ms2rescore"], pin]
+        }
+
+        ch_percolator_ms2rescore_in.view()
         MS2RESCORE_PERCOLATOR(
             ch_percolator_ms2rescore_in
         )
