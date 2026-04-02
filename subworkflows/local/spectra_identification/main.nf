@@ -1,5 +1,5 @@
 include { COMETCONFIG } from '../../../modules/local/cometconfig/main'
-include { COMET } from '../../../modules/local/comet/main'
+include { COMET } from '../../../modules/nf-core/comet/main'
 include { SAGECONFIG } from '../../../modules/local/sageconfig/main'
 include { SAGEBETA } from '../../../modules/local/sagebeta/main'
 
