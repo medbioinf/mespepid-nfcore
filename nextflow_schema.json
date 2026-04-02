@@ -125,10 +125,9 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
+                    "description": "This is the default comet parameters file. In this file, parameters can be set, which are neither passed by common runtime (threads, fasta, ...) or by common search engine parameters. If an empty String is given, the provided default in assets is used.",
                     "default": "",
-                    "pattern": ".comet.params$",
-                    "description": "Template file for Comet params",
-                    "help_text": "This is the default comet parameters file. In this additional parameters can be set, which are neither passed by common runtime (threads, fasta, ...) or by common search engine parameters. If an empty String is given, the provided default in assets is used."
+                    "fa_icon": "fas fa-cogs"
                 }
             }
         },
