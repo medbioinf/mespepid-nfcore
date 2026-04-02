@@ -1,7 +1,5 @@
 process MS2RESCORE_RUNMS2RESCORE {
-    tag "${meta.id}"
-
-    publishDir path: { "${params.outdir}/${meta.outdir ?: ''}/ms2rescore/" }, mode: params.publish_dir_mode
+    tag "$meta.id"
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
@@ -11,12 +9,10 @@ process MS2RESCORE_RUNMS2RESCORE {
     input:
     // TODO: model should be in meta
     // TODO: fragment_tol_da should be in meta
-    // TODO: spectrum_id_pattern should be in meta
     tuple val(meta), path(mzml), path(raw_spectra), path(psms_file)
     val model
     path model_dir
     val fragment_tol_da
-    val spectrum_id_pattern
     val chunk_size
 
     output:
@@ -34,6 +30,7 @@ process MS2RESCORE_RUNMS2RESCORE {
 
     // use mzML if given, otherwise use raw spectra
     def spectra_file = mzml ?: raw_spectra
+    def spectrum_id_pattern = meta.spectrum_id_pattern ?: '.*scan=(\\d+)$'
     """
     ms2rescore_run_chunked.py \\
         ${args} \\

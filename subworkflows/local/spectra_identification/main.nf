@@ -49,7 +49,11 @@ workflow SPECTRA_IDENTIFICATION {
             ch_comet_in
         )
         ch_versions = ch_versions.mix(COMET.out.versions_comet)
-        ch_identifications = ch_identifications.mix(COMET.out.mzid.map { meta, mzid -> [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid] })
+        ch_identifications = ch_identifications.mix(
+            COMET.out.mzid.map { meta, mzid ->
+                [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: '.*scan=(\\d+)$'], mzid]
+            }
+        )
     }
 
     if (run_sage) {
@@ -76,7 +80,11 @@ workflow SPECTRA_IDENTIFICATION {
             ch_sage_config,
         )
         ch_versions = ch_versions.mix(SAGEBETA.out.versions_sagebeta)
-        ch_identifications = ch_identifications.mix(SAGEBETA.out.tsv.map { meta, tsv -> [meta + [searchengine: 'sage', idfile_type: 'sage_tsv'], tsv] })
+        ch_identifications = ch_identifications.mix(
+            SAGEBETA.out.tsv.map { meta, tsv ->
+                [meta + [searchengine: 'sage', idfile_type: 'sage_tsv', spectrum_id_pattern: '(.*)'], tsv]
+            }
+        )
     }
 
     // convert search results into psm-utils format and PIN files for downstream processing
