@@ -1,5 +1,5 @@
 process COMETCONFIG {
-    tag "${meta.id}"
+    tag "$meta.id"
     label 'process_single'
 
     publishDir path: { "${params.outdir}/comet" }, mode: params.publish_dir_mode
@@ -15,16 +15,16 @@ process COMETCONFIG {
     val fragment_tol_da
 
     output:
-    tuple val(meta), path("*.comet.params"), emit: params
+    tuple val(meta), path("${params_file}"), emit: params
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def params_file = "${prefix}.comet.params"
+    params_file = "${prefix}.comet.params"
 
-    // TODO: this kind of parameters shoudl not be used, use as an input variable instead
+    // TODO: this kind of parameters should not be used, use as an input variable instead
     def output_sqt = task.ext.output_sqt == null ? 0 : (task.ext.output_sqt ? 1 : 0)
     def output_txt = task.ext.output_txt == null ? 0 : (task.ext.output_txt ? 1 : 0)
     def output_pepxml = task.ext.output_pepxml == null ? 0 : (task.ext.output_pepxml ? 1 : 0)
@@ -57,7 +57,6 @@ process COMETCONFIG {
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def params_file = "${prefix}.comet.params"
     """
     touch ${params_file}
     """
