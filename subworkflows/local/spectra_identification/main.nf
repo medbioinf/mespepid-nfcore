@@ -1,4 +1,5 @@
-include { COMET } from '../../../modules/local/comet/main'
+include { COMETCONFIG } from '../../../modules/local/cometconfig/main'
+include { COMET } from '../../../modules/nf-core/comet/main'
 include { SAGECONFIG } from '../../../modules/local/sageconfig/main'
 include { SAGEBETA } from '../../../modules/local/sagebeta/main'
 
@@ -14,6 +15,7 @@ workflow SPECTRA_IDENTIFICATION {
     run_comet
     run_sage
     run_percolator
+    comet_config_template
     sage_config_template
     sage_prefilter_chunk_size
     sage_prefilter
@@ -32,11 +34,22 @@ workflow SPECTRA_IDENTIFICATION {
 
     // run Comet, if enabled
     if (run_comet) {
-        ch_comet_in = ch_ident_in.map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
-        COMET(
-            ch_comet_in,
+        // TODO: allow comet_config_templates per sample file
+        ch_comet_config_template = comet_config_template ? channel.fromPath(comet_config_template, checkIfExists: true) : channel.fromPath("${projectDir}/assets/searchengines/comet.params", checkIfExists: true)
+        ch_comet_config_template = ch_comet_config_template.map { params -> [[id: 'default'], params] }
+
+        COMETCONFIG(
+            ch_comet_config_template,
             precursor_tol_ppm,
             fragment_tol_da,
+        )
+
+        ch_comet_in = ch_ident_in
+            .map { meta, mzml, _raw_spectra, fasta -> [meta, mzml, fasta] }
+            .combine(COMETCONFIG.out.params.map { _meta, params -> [params] })
+
+        COMET(
+            ch_comet_in
         )
         ch_versions = ch_versions.mix(COMET.out.versions_comet)
         ch_identifications = ch_identifications.mix(COMET.out.mzid.map { meta, mzid -> [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid] })
