@@ -149,8 +149,9 @@
                 },
                 "ms2rescore_model_dir": {
                     "type": "string",
-                    "default": "",
-                    "description": "Optional directory with pre-downloaded MS2PIP model files. If the requested model is missing there, it is downloaded into the task work directory."
+                    "format": "directory-path",
+                    "description": "Optional directory with pre-downloaded MS2PIP model files. If set to null, the respoective model is downloaded and saved in the results directory.",
+                    "fa_icon": "fas fa-folder-open"
                 }
             }
         },
