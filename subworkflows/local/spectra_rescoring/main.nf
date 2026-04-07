@@ -66,8 +66,6 @@ workflow SPECTRA_RESCORING {
         ch_percolator_ms2rescore_in = MS2RESCORE_RUNMS2RESCORE.out.pin.map { meta, pin ->
             [meta + [status: 'ms2rescore', outdir: meta.searchengine + "/ms2rescore"], pin]
         }
-
-        ch_percolator_ms2rescore_in.view()
         MS2RESCORE_PERCOLATOR(
             ch_percolator_ms2rescore_in
         )
