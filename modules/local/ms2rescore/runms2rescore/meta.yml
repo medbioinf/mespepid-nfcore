@@ -18,59 +18,52 @@ tools:
       identifier: biotools:mssup2_suprescore
 
 input:
-  ### TODO nf-core: Add a description of all of the variables used as input
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
           e.g. `[ id:'sample1' ]`
-    - bam:
+    - mzml:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
+        description: Spectrum file in mzML format
+        pattern: "*.{mzml, mzML}"
         ontologies:
-          - edam: "http://edamontology.org/format_2572" # BAM
-          - edam: "http://edamontology.org/format_2573" # CRAM
-          - edam: "http://edamontology.org/format_3462" # SAM
+          - edam: "http://edamontology.org/format_3244"
+    - raw_spectra:
+        type: string
+        description: Spectrum file in the original format (e.g. Thermo RAW file, Bruker .d folder, etc.)
+        pattern: "*.{raw,RAW,d,D}"
+        ontologies: []
+    - psms_file:
+        type: file
+        description: PSMs in tab-separated format from psm-utils.
+        pattern: "*.tsv"
+        ontologies: []
+  - - model_dir:
+        type: directory
+        description: path to the directory containing the MS2PIP model files.
+        ontologies: []
 
 output:
-  ### TODO nf-core: Add a description of all of the variables used as output
-  bam:
+  pin:
     - - meta:
           type: map
           description: |
             Groovy Map containing sample information
             e.g. `[ id:'sample1' ]`
-      - "*.bam":
+      - "*.pin":
           type: file
-          description: Sorted BAM/CRAM/SAM file
-          pattern: "*.{bam,cram,sam}"
-          ontologies:
-            - edam: "http://edamontology.org/format_2572" # BAM
-            - edam: "http://edamontology.org/format_2573" # CRAM
-            - edam: "http://edamontology.org/format_3462" # SAM
-  versions_ms2rescore:
-    - - "${task.process}":
-          type: string
-          description: The name of the process
-      - "ms2rescore":
-          type: string
-          description: The name of the tool
-      - "ms2rescore --version":
-          type: eval
-          description: The expression to obtain the version of the tool
-
-topics:
+          description: Peptides in pin format for Percolator input
+          pattern: "*.pin"
+          ontologies: []
   versions:
-    - - ${task.process}:
-          type: string
-          description: The name of the process
-      - ms2rescore:
-          type: string
-          description: The name of the tool
-      - ms2rescore --version:
-          type: eval
-          description: The expression to obtain the version of the tool
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: http://edamontology.org/format_3750 # YAML
+
 authors:
   - "@julianu"
 maintainers:
