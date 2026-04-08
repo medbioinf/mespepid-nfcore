@@ -1,14 +1,34 @@
 #!/usr/bin/env python
 
+# Copyright 2026 Julian Uszkoreit - MIT License
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the “Software”), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 import platform
 import logging
-import pandas as pd
 from importlib.metadata import version
 
 from psm_utils.io import read_file, write_file
 
 from ms2rescore.feature_generators.ms2pip import MS2PIPFeatureGenerator
 from ms2rescore.feature_generators.deeplc import DeepLCFeatureGenerator
+
 
 def format_yaml_like(data: dict, indent: int = 0) -> str:
     """Formats a dictionary to a YAML-like string.
@@ -48,17 +68,19 @@ if __name__ == "__main__":
 
     ms2pip_chunksize = int("${chunk_size}")
 
-    logger.info(f"""Parameters:
-                PSMs file: {psm_filename}
-                Spectra file: {spectrafile}
-                MS2PIP model: {model}
-                MS2PIP model dir: {model_dir}
-                MS2 tolerance: {ms2_tolerance}
-                Spectrum ID pattern: {spectrum_id_pattern}
-                Processes: {processes}
-                MS2PIP chunk size: {ms2pip_chunksize}
-                Output file: {out_file}
-                """)
+    logger.info(
+        f"""Parameters:
+        PSMs file: {psm_filename}
+        Spectra file: {spectrafile}
+        MS2PIP model: {model}
+        MS2PIP model dir: {model_dir}
+        MS2 tolerance: {ms2_tolerance}
+        Spectrum ID pattern: {spectrum_id_pattern}
+        Processes: {processes}
+        MS2PIP chunk size: {ms2pip_chunksize}
+        Output file: {out_file}
+"""
+    )
 
     # read in the PSMs
     psm_list = read_file(psm_filename, filetype="tsv")
@@ -73,15 +95,17 @@ if __name__ == "__main__":
         spectrum_path=spectrafile,
         spectrum_id_pattern=spectrum_id_pattern,
         model_dir=model_dir,
-        processes=processes
+        processes=processes,
     )
 
     # go chunk-wise through the PSMs and add MS2PIP features
     chunk_start = 0
     while chunk_start < len(psm_list):
-        psm_list_chunk = psm_list[chunk_start:(min(chunk_start+ms2pip_chunksize, len(psm_list)))]
+        psm_list_chunk = psm_list[
+            chunk_start : (min(chunk_start + ms2pip_chunksize, len(psm_list)))
+        ]
         ms2pip_fgen.add_features(psm_list_chunk)
-        chunk_start = min(chunk_start+ms2pip_chunksize, len(psm_list))
+        chunk_start = min(chunk_start + ms2pip_chunksize, len(psm_list))
         print(f"Done adding MS2PIP features for {chunk_start} / {len(psm_list)} PSMs")
 
     # initialie the DeepLC feature generator
@@ -96,7 +120,6 @@ if __name__ == "__main__":
     # add DeepLC features to the PSMs
     deeplc_fgen.add_features(psm_list)
 
-
     psm_list_feature_names = {
         feature_name
         for psm_list_features in psm_list["rescoring_features"]
@@ -105,7 +128,8 @@ if __name__ == "__main__":
 
     # remove PSMs with missing features
     psms_with_features = [
-        (set(psm.rescoring_features.keys()) == psm_list_feature_names) for psm in psm_list
+        (set(psm.rescoring_features.keys()) == psm_list_feature_names)
+        for psm in psm_list
     ]
 
     if psms_with_features.count(False) > 0:
@@ -113,19 +137,24 @@ if __name__ == "__main__":
         missing_features = {
             feature_name
             for psm in removed_psms
-            for feature_name in psm_list_feature_names - set(psm.rescoring_features.keys())
+            for feature_name in psm_list_feature_names
+            - set(psm.rescoring_features.keys())
         }
-        print(f"Removed {psms_with_features.count(False)} PSMs that were missing one or more rescoring feature(s), {missing_features}.")
+        print(
+            f"Removed {psms_with_features.count(False)} PSMs that were missing one or more rescoring feature(s), {missing_features}."
+        )
         psm_list = psm_list[psms_with_features]
 
     # output the Percolator PIN file
-    write_file(psm_list, out_file, filetype="percolator", feature_names=psm_list_feature_names)
-
+    write_file(
+        psm_list, out_file, filetype="percolator", feature_names=psm_list_feature_names
+    )
 
     # output versions in YML file
-    versions = {"${task.process}": {
+    versions = {
+        "${task.process}": {
             "python": platform.python_version(),
-            "ms2rescore": version('ms2rescore'),
+            "ms2rescore": version("ms2rescore"),
         }
     }
     with open("versions.yml", "w") as f:
