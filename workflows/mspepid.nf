@@ -83,6 +83,7 @@ workflow MSPEPID {
         ms2rescore_model,
         ms2rescore_model_dir,
     )
+    ch_versions = ch_versions.mix(SPECTRA_RESCORING.out.versions)
 
     //
     // Collate and save software versions

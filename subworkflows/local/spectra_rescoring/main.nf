@@ -33,7 +33,6 @@ workflow SPECTRA_RESCORING {
         PERCOLATOR(
             ch_percolator_in
         )
-        ch_versions = ch_versions.mix(PERCOLATOR.out.versions_percolator)
         ch_rescoring_out = ch_rescoring_out
             .mix(PERCOLATOR.out.target_pout.map { meta, file -> [meta + [status: 'percolator_target'], file] })
             .mix(PERCOLATOR.out.decoy_pout.map { meta, file -> [meta + [status: 'percolator_decoy'], file] })
@@ -44,7 +43,6 @@ workflow SPECTRA_RESCORING {
         // check/download MS2Rescore model
         if (!ms2rescore_model_dir) {
             MS2RESCORE_GETMODEL(ms2rescore_model)
-            ch_versions = ch_versions.mix(MS2RESCORE_GETMODEL.out.versions_ms2rescore)
 
             ms2rescore_model_dir_val = MS2RESCORE_GETMODEL.out.model_dir
         }
@@ -60,8 +58,7 @@ workflow SPECTRA_RESCORING {
             ch_ms2rescore_in,
             ms2rescore_model_dir_val,
         )
-        ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions_ms2rescore)
-        ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions_python)
+        ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions)
 
         ch_percolator_ms2rescore_in = MS2RESCORE_RUNMS2RESCORE.out.pin.map { meta, pin ->
             [meta + [status: 'ms2rescore', outdir: meta.searchengine + "/ms2rescore"], pin]
@@ -69,7 +66,6 @@ workflow SPECTRA_RESCORING {
         MS2RESCORE_PERCOLATOR(
             ch_percolator_ms2rescore_in
         )
-        ch_versions = ch_versions.mix(MS2RESCORE_PERCOLATOR.out.versions_percolator)
         ch_rescoring_out = ch_rescoring_out
             .mix(MS2RESCORE_PERCOLATOR.out.target_pout.map { meta, file -> [meta + [status: 'ms2rescore_target'], file] })
             .mix(MS2RESCORE_PERCOLATOR.out.decoy_pout.map { meta, file -> [meta + [status: 'ms2rescore_decoy'], file] })

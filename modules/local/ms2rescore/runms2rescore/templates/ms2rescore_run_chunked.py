@@ -1,46 +1,64 @@
 #!/usr/bin/env python
 
-import argparse
+import platform
 import logging
 import pandas as pd
+from importlib.metadata import version
 
 from psm_utils.io import read_file, write_file
 
 from ms2rescore.feature_generators.ms2pip import MS2PIPFeatureGenerator
 from ms2rescore.feature_generators.deeplc import DeepLCFeatureGenerator
 
+def format_yaml_like(data: dict, indent: int = 0) -> str:
+    """Formats a dictionary to a YAML-like string.
 
-def argparse_setup():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-psms_file", help="Input PSMs TSV file", required=True, type=argparse.FileType('r'))
-    parser.add_argument("-spectra", help="Corresponding mzML file or .d path for PSMs file", required=True, type=str)
+    Args:
+        data (dict): The dictionary to format.
+        indent (int): The current indentation level.
 
-    parser.add_argument("-model", help="Model for MS2PIP", default="HCD", type=str)
-    parser.add_argument("-model_dir", help="Directory to store/find MS2PIP model", default="./ms2pip-model", type=str)
-    parser.add_argument("-ms2_tolerance", help="The MS2/fragment tolerance", default=0.02, type=float)
-    parser.add_argument("-spectrum_id_pattern", help="The spectrum ID pattern to correspond PSMs to spectra", default="(.*)", type=str)
-    parser.add_argument("-processes", help="Number of processes / threads to use", default=8, type=int)
+    Returns:
+        str: A string formatted as YAML.
+    """
+    yaml_str = ""
+    for key, value in data.items():
+        spaces = "  " * indent
+        if isinstance(value, dict):
+            yaml_str += f"{spaces}{key}:\\n{format_yaml_like(value, indent + 1)}"
+        else:
+            yaml_str += f"{spaces}{key}: {value}\\n"
+    return yaml_str
 
-    parser.add_argument("-chunk_size", help="Number of PSMs per chunk (for MS2PIP), if <1 use all", default=100000, type=int)
-
-    parser.add_argument("-out_file", help="Output Percolator PIN file", required=True, type=argparse.FileType('w'))
-
-    return parser.parse_args()
 
 if __name__ == "__main__":
-    args = argparse_setup()
     logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("ms2rescore_run_chunked")
+    logger.setLevel(logging.INFO)
 
-    psm_filename = args.psms_file.name
-    spectrafile = args.spectra
+    # parameters are passed from the main.nf script
+    psm_filename = "${psms_file}"
+    spectrafile = "${spectra_file}"
+    out_file = "${out_file}"
 
-    model = args.model
-    model_dir = args.model_dir
-    ms2_tolerance = args.ms2_tolerance
-    spectrum_id_pattern = args.spectrum_id_pattern #r".*scan=(\d+)$"
-    processes = args.processes
+    model = "${ms2pip_model}"
+    model_dir = "${model_dir}"
+    ms2_tolerance = float("${fragment_tol_da}")
+    spectrum_id_pattern = "${spectrum_id_pattern}"
+    processes = int("${task.cpus}")
 
-    ms2pip_chunksize = args.chunk_size
+    ms2pip_chunksize = int("${chunk_size}")
+
+    logger.info(f"""Parameters:
+                PSMs file: {psm_filename}
+                Spectra file: {spectrafile}
+                MS2PIP model: {model}
+                MS2PIP model dir: {model_dir}
+                MS2 tolerance: {ms2_tolerance}
+                Spectrum ID pattern: {spectrum_id_pattern}
+                Processes: {processes}
+                MS2PIP chunk size: {ms2pip_chunksize}
+                Output file: {out_file}
+                """)
 
     # read in the PSMs
     psm_list = read_file(psm_filename, filetype="tsv")
@@ -101,4 +119,14 @@ if __name__ == "__main__":
         psm_list = psm_list[psms_with_features]
 
     # output the Percolator PIN file
-    write_file(psm_list, args.out_file.name, filetype="percolator", feature_names=psm_list_feature_names)
+    write_file(psm_list, out_file, filetype="percolator", feature_names=psm_list_feature_names)
+
+
+    # output versions in YML file
+    versions = {"${task.process}": {
+            "python": platform.python_version(),
+            "ms2rescore": version('ms2rescore'),
+        }
+    }
+    with open("versions.yml", "w") as f:
+        f.write(format_yaml_like(versions))
