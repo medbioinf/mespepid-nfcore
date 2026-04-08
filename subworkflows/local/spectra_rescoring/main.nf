@@ -41,18 +41,18 @@ workflow SPECTRA_RESCORING {
     // run MS2Rescore, if enabled
     if (run_ms2rescore) {
         // check/download MS2Rescore model
+        // TODO: allow models per sample (and download multiple models if needed)
         if (!ms2rescore_model_dir) {
             MS2RESCORE_GETMODEL(ms2rescore_model)
-
-            ms2rescore_model_dir_val = MS2RESCORE_GETMODEL.out.model_dir
+            ms2rescore_model_dir_val = MS2RESCORE_GETMODEL.out.model_dir.first()
         }
         else {
             ms2rescore_model_dir_val = channel.value(file(ms2rescore_model_dir, checkIfExists: true))
         }
 
-        // TODO: make the setting of the model and fragemnt_tolerance per sample, not hardcoded for all runs
+        // TODO: make the setting of the model and fragment_tolerance per sample, not hardcoded for all runs
         ch_ms2rescore_in = ch_rescoring_in.map { meta, mzml, raw_spectra, psmutils_tsv ->
-            [meta + [ms2pip_model: ms2rescore_model, fragment_tol_da: fragment_tol_da], mzml, raw_spectra, psmutils_tsv]
+            [meta + [outdir: meta.searchengine + "/ms2rescore", ms2pip_model: ms2rescore_model, fragment_tol_da: fragment_tol_da], mzml, raw_spectra, psmutils_tsv]
         }
         MS2RESCORE_RUNMS2RESCORE(
             ch_ms2rescore_in,
