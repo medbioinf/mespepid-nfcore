@@ -52,12 +52,13 @@ workflow SPECTRA_RESCORING {
             ms2rescore_model_dir_val = channel.value(file(ms2rescore_model_dir, checkIfExists: true))
         }
 
-        // TODO: set chunk size as ext.args
+        // TODO: make the setting of the model and fragemnt_tolerance per sample, not hardcoded for all runs
+        ch_ms2rescore_in = ch_rescoring_in.map { meta, mzml, raw_spectra, psmutils_tsv ->
+            [meta + [ms2pip_model: ms2rescore_model, fragment_tol_da: fragment_tol_da], mzml, raw_spectra, psmutils_tsv]
+        }
         MS2RESCORE_RUNMS2RESCORE(
-            ch_rescoring_in,
-            ms2rescore_model,
+            ch_ms2rescore_in,
             ms2rescore_model_dir_val,
-            fragment_tol_da,
         )
         ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions_ms2rescore)
         ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions_python)
