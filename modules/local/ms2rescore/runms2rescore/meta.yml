@@ -15,7 +15,7 @@ tools:
       tool_dev_url: "https://github.com/compomics/ms2rescore"
       doi: "10.1021/acs.jproteome.3c00785"
       licence: ["Apache-2.0"]
-      identifier: biotools:mssup2_suprescore
+      identifier: biotools:ms2rescore
 
 input:
   - - meta:
