@@ -58,7 +58,6 @@ workflow SPECTRA_RESCORING {
             ms2rescore_model,
             ms2rescore_model_dir_val,
             fragment_tol_da,
-            1000,
         )
         ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions_ms2rescore)
         ch_versions = ch_versions.mix(MS2RESCORE_RUNMS2RESCORE.out.versions_python)

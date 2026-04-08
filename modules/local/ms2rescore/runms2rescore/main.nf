@@ -13,7 +13,6 @@ process MS2RESCORE_RUNMS2RESCORE {
     val model
     path model_dir
     val fragment_tol_da
-    val chunk_size
 
     output:
     tuple val(meta), path("*.pin"), emit: pin
@@ -41,7 +40,6 @@ process MS2RESCORE_RUNMS2RESCORE {
         -ms2_tolerance ${fragment_tol_da} \\
         -spectrum_id_pattern '${spectrum_id_pattern}' \\
         -processes ${task.cpus} \\
-        -chunk_size ${chunk_size}  \\
         -out_file ${prefix}.pin
     """
 
