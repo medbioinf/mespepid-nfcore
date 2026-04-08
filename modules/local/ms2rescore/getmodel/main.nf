@@ -51,7 +51,7 @@ PY
     """
     echo ${args}
 
-    mkdir -p model_dir
-    touch model_dir/STUB_MODEL
+    mkdir -p ms2pip_model
+    touch ms2pip_model/STUB_MODEL
     """
 }
