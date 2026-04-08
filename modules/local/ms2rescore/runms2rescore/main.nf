@@ -35,5 +35,11 @@ process MS2RESCORE_RUNMS2RESCORE {
     echo ${args}
 
     touch ${prefix}.pin
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version 2>&1 | cut -d ' ' -f 2)
+        ms2rescore: \$(python -c "import ms2rescore; print(ms2rescore.__version__)")
+    END_VERSIONS
     """
 }
