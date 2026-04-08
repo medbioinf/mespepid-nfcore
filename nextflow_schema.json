@@ -135,7 +135,7 @@
                 "run_percolator": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Enables rescoring with Percolator."
+                    "description": "Enables rescoring with Percolator. Some rescorings (MS2Rescore, Oktoberfest) depend on Percolator results, so Percolator will be run if any of these are enabled, even if this parameter is set to false."
                 },
                 "run_ms2rescore": {
                     "type": "boolean",
@@ -145,12 +145,12 @@
                 "ms2rescore_model": {
                     "type": "string",
                     "default": "HCD",
-                    "description": "The MS2PIP model to use for MS2REscore. Models can be found here: https://ms2pip.readthedocs.io/en/latest/prediction-models/"
+                    "description": "The MS2PIP model to use for MS2Rescore. Models can be found here: https://ms2pip.readthedocs.io/en/latest/prediction-models/"
                 },
                 "ms2rescore_model_dir": {
                     "type": "string",
                     "format": "directory-path",
-                    "description": "Optional directory with pre-downloaded MS2PIP model files. If set to null, the respoective model is downloaded and saved in the results directory.",
+                    "description": "Optional directory with pre-downloaded MS2PIP model files. If set to null, the respective model is downloaded and saved in the results directory.",
                     "fa_icon": "fas fa-folder-open"
                 }
             }
