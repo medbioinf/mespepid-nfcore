@@ -5,6 +5,11 @@
         "https://github.com/nf-core/modules.git": {
             "modules": {
                 "nf-core": {
+                    "comet": {
+                        "branch": "master",
+                        "git_sha": "f7a7cdc9bbb9c48cac6a0b2aa0fb46a9aadd8562",
+                        "installed_by": ["modules"]
+                    },
                     "gunzip": {
                         "branch": "master",
                         "git_sha": "96c57dfd98a0641886a67bd449fe33ee2ec0e374",
@@ -17,7 +22,7 @@
                     },
                     "thermorawfileparser": {
                         "branch": "master",
-                        "git_sha": "daaecc3478d6f6ad9cb8f48ec7d657ab6c67877f",
+                        "git_sha": "28ed9d65d3c487772622645d6052bf623816b358",
                         "installed_by": ["modules"]
                     },
                     "untar": {

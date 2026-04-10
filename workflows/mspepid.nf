@@ -29,6 +29,7 @@ workflow MSPEPID {
     run_comet // boolean: whether to run Comet for spectra identification
     run_sage // boolean: whether to run Sage for spectra identification
     run_percolator // boolean: whether to run Percolator for rescoring
+    comet_config_template // string: path to comet config template, or null to use created default config
     sage_config_template // path: path to sage config template
     sage_prefilter_chunk_size // integer: chunk size for sage prefiltering
     sage_prefilter // boolean: whether to run sage prefiltering
@@ -63,6 +64,7 @@ workflow MSPEPID {
         run_comet,
         run_sage,
         run_percolator,
+        comet_config_template,
         sage_config_template,
         sage_prefilter_chunk_size,
         sage_prefilter,
