@@ -44,7 +44,7 @@ workflow SPECTRA_RESCORING {
         // TODO: allow models per sample (and download multiple models if needed)
         if (!ms2rescore_model_dir) {
             MS2RESCORE_GETMODEL(ms2rescore_model)
-            ms2rescore_model_dir_val = MS2RESCORE_GETMODEL.out.model_dir.first()
+            ms2rescore_model_dir_val =  MS2RESCORE_GETMODEL.out.model_dir
         }
         else {
             ms2rescore_model_dir_val = channel.value(file(ms2rescore_model_dir, checkIfExists: true))
