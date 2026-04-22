@@ -51,7 +51,10 @@ workflow SPECTRA_IDENTIFICATION {
         ch_versions = ch_versions.mix(COMET.out.versions_comet)
         ch_identifications = ch_identifications.mix(
             COMET.out.mzid.map { meta, mzid ->
-                [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: '.*scan=(\\d+)$'], mzid]
+                def spectrumPattern = meta.vendor.toString() == 'bruker'
+                    ? '.*index=(\\d+)$'
+                    : '.*scan=(\\d+)$'
+                [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: spectrumPattern], mzid]
             }
         )
     }
