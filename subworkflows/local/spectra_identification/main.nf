@@ -4,7 +4,6 @@ include { SAGECONFIG } from '../../../modules/local/sageconfig/main'
 include { SAGEBETA } from '../../../modules/local/sagebeta/main'
 
 include { PSMUTILSCONVERSIONS } from '../../../modules/local/psmutilsconversions/main'
-include { PERCOLATOR } from '../../../modules/local/percolator/main'
 
 workflow SPECTRA_IDENTIFICATION {
     take:
@@ -14,14 +13,12 @@ workflow SPECTRA_IDENTIFICATION {
     fragment_tol_da
     run_comet
     run_sage
-    run_percolator
     comet_config_template
     sage_config_template
     sage_prefilter_chunk_size
     sage_prefilter
 
     main:
-
     ch_versions = channel.empty()
 
     // TODO: this will become the identifications, probably with some meta mapping?
@@ -52,7 +49,14 @@ workflow SPECTRA_IDENTIFICATION {
             ch_comet_in
         )
         ch_versions = ch_versions.mix(COMET.out.versions_comet)
-        ch_identifications = ch_identifications.mix(COMET.out.mzid.map { meta, mzid -> [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid] })
+        ch_identifications = ch_identifications.mix(
+            COMET.out.mzid.map { meta, mzid ->
+                def spectrumPattern = meta.vendor.toString() == 'bruker'
+                    ? '.*index=(\\d+)$'
+                    : '.*scan=(\\d+)$'
+                [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: spectrumPattern], mzid]
+            }
+        )
     }
 
     if (run_sage) {
@@ -79,7 +83,11 @@ workflow SPECTRA_IDENTIFICATION {
             ch_sage_config,
         )
         ch_versions = ch_versions.mix(SAGEBETA.out.versions_sagebeta)
-        ch_identifications = ch_identifications.mix(SAGEBETA.out.tsv.map { meta, tsv -> [meta + [searchengine: 'sage', idfile_type: 'sage_tsv'], tsv] })
+        ch_identifications = ch_identifications.mix(
+            SAGEBETA.out.tsv.map { meta, tsv ->
+                [meta + [searchengine: 'sage', idfile_type: 'sage_tsv', spectrum_id_pattern: '(.*)'], tsv]
+            }
+        )
     }
 
     // convert search results into psm-utils format and PIN files for downstream processing
@@ -91,15 +99,6 @@ workflow SPECTRA_IDENTIFICATION {
 
     ch_psmutils_tsvs = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, file -> [meta + [status: 'psmutils'], file] }
     ch_searchengine_pins = PSMUTILSCONVERSIONS.out.pin.map { meta, file -> [meta + [status: 'pin'], file] }
-
-    // run percolator, if enabled
-    if (run_percolator) {
-        ch_percolator_in = ch_searchengine_pins.map { meta, pin -> [meta + [outdir: meta.searchengine], pin] }
-        PERCOLATOR(
-            ch_percolator_in
-        )
-        ch_versions = ch_versions.mix(PERCOLATOR.out.versions_percolator)
-    }
 
     emit:
     versions = ch_versions
