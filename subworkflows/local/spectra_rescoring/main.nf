@@ -1,4 +1,4 @@
-include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR } from '../../../modules/local/percolator/main'
+include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR } from '../../../modules/nf-core/percolator/main'
 include { MS2RESCORE_GETMODEL } from '../../../modules/local/ms2rescore/getmodel/main'
 include { MS2RESCORE_RUNMS2RESCORE } from '../../../modules/local/ms2rescore/runms2rescore/main'
 
@@ -34,8 +34,8 @@ workflow SPECTRA_RESCORING {
             ch_percolator_in
         )
         ch_rescoring_out = ch_rescoring_out
-            .mix(PERCOLATOR.out.target_pout.map { meta, file -> [meta + [status: 'percolator_target'], file] })
-            .mix(PERCOLATOR.out.decoy_pout.map { meta, file -> [meta + [status: 'percolator_decoy'], file] })
+            .mix(PERCOLATOR.out.target_psms.map { meta, file -> [meta + [status: 'percolator_target'], file] })
+            .mix(PERCOLATOR.out.decoy_psms.map { meta, file -> [meta + [status: 'percolator_decoy'], file] })
     }
 
     // run MS2Rescore, if enabled
@@ -67,8 +67,8 @@ workflow SPECTRA_RESCORING {
             ch_percolator_ms2rescore_in
         )
         ch_rescoring_out = ch_rescoring_out
-            .mix(MS2RESCORE_PERCOLATOR.out.target_pout.map { meta, file -> [meta + [status: 'ms2rescore_target'], file] })
-            .mix(MS2RESCORE_PERCOLATOR.out.decoy_pout.map { meta, file -> [meta + [status: 'ms2rescore_decoy'], file] })
+            .mix(MS2RESCORE_PERCOLATOR.out.target_psms.map { meta, file -> [meta + [status: 'ms2rescore_target'], file] })
+            .mix(MS2RESCORE_PERCOLATOR.out.decoy_psms.map { meta, file -> [meta + [status: 'ms2rescore_decoy'], file] })
     }
 
     emit:
