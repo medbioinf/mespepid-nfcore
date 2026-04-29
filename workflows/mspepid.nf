@@ -39,6 +39,7 @@ workflow MSPEPID {
     ms2rescore_model_dir // string: optional directory containing pre-downloaded MS2PIP models
 
     main:
+
     def ch_versions = channel.empty()
 
     // create channel for fasta input

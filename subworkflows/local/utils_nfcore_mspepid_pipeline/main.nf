@@ -102,7 +102,8 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
 
-    channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
+    channel
+        .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map { row ->
             def meta = row[0]
             def spectrum_file = row.size() > 1 ? row[1] : null
