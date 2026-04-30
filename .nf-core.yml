@@ -1,29 +1,26 @@
-repository_type: pipeline
-
-nf_core_version: 3.5.2
-
 lint:
+  files_exist:
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+    - assets/multiqc_config.yml
   files_unchanged:
     - .github/CONTRIBUTING.md
     - assets/sendmail_template.txt
     - .github/PULL_REQUEST_TEMPLATE.md
   multiqc_config: false
-  files_exist:
-    - conf/igenomes.config
-    - conf/igenomes_ignored.config
-    - assets/multiqc_config.yml
-
+nf_core_version: 4.0.1
+repository_type: pipeline
 template:
-  org: nf-core
-  name: mspepid
+  author: Julian Uszkoreit
   description: A pipeline for the identification of peptides in mass spectrometry
     data.
-  author: Julian Uszkoreit
-  version: 1.0.0dev
-  force: true
+  force: false
+  is_nfcore: true
+  name: mspepid
+  org: nf-core
   outdir: .
   skip_features:
     - igenomes
     - multiqc
     - fastqc
-  is_nfcore: true
+  version: 1.0.0dev

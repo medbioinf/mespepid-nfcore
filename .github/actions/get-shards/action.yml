@@ -21,28 +21,13 @@ runs:
   using: "composite"
   steps:
     - name: Install nf-test
-      uses: nf-core/setup-nf-test@v1
+      uses: nf-core/setup-nf-test@4069fbbaabe94c08faba4ad261bfa88225ba133f # v2
       with:
         version: ${{ env.NFT_VER }}
-
-    - name: Fix permissions on workspace (if needed)
-      shell: bash
-      run: |
-        chown -R $(id -u):$(id -g) "$GITHUB_WORKSPACE"
-
-    - name: Show repo path and contents
-      shell: bash
-      run: |
-        echo "Workspace: $GITHUB_WORKSPACE"
-        ls -la "$GITHUB_WORKSPACE"
-
     - name: Get number of shards
       id: shards
       shell: bash
       run: |
-        cd "$GITHUB_WORKSPACE"
-        git status
-
         # Run nf-test with dynamic parameter
         nftest_output=$(nf-test test \
           --profile +docker \

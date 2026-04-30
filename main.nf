@@ -15,9 +15,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { MSPEPID } from './workflows/mspepid'
+include { MSPEPID  } from './workflows/mspepid'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_mspepid_pipeline'
-include { PIPELINE_COMPLETION } from './subworkflows/local/utils_nfcore_mspepid_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_mspepid_pipeline'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
@@ -38,6 +38,7 @@ workflow NFCORE_MSPEPID {
     //
     MSPEPID(
         samplesheet,
+        params.outdir,
         params.fasta,
         params.entrapment_fold,
         params.skip_decoy_generation,
@@ -62,10 +63,12 @@ workflow NFCORE_MSPEPID {
 */
 
 workflow {
+
+    main:
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
-    PIPELINE_INITIALISATION(
+    PIPELINE_INITIALISATION (
         params.version,
         params.validate_params,
         params.monochrome_logs,
@@ -74,24 +77,29 @@ workflow {
         params.input,
         params.help,
         params.help_full,
-        params.show_hidden,
+        params.show_hidden
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_MSPEPID(
+    NFCORE_MSPEPID (
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
     // SUBWORKFLOW: Run completion tasks
     //
-    PIPELINE_COMPLETION(
+    PIPELINE_COMPLETION (
         params.email,
         params.email_on_fail,
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
     )
 }
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    THE END
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
