@@ -1,0 +1,55 @@
+{
+    "-profile test": {
+        "content": [
+            {
+                "COMET": {
+                    "comet": "2026.01 rev. 1 (e4f767c)"
+                },
+                "OPENMS_DECOYDATABASE": {
+                    "openms": "3.5.0"
+                },
+                "PERCOLATOR": {
+                    "percolator": "3.07.1"
+                },
+                "PSMUTILSCONVERSIONS": {
+                    "Python": "3.11.15",
+                    "psm-utils": "pepxml-and-mzid-fixes"
+                },
+                "THERMORAWFILEPARSER": {
+                    "thermorawfileparser": "1.4.5"
+                },
+                "Workflow": {
+                    "nf-core/mspepid": "v1.0.0dev"
+                }
+            },
+            [
+                "comet",
+                "comet/1-OVEMB150205_12.comet.params",
+                "comet/1-OVEMB150205_12.mzid",
+                "comet/1-OVEMB150205_12.pin",
+                "comet/1-OVEMB150205_12.psm_utils.tsv",
+                "comet/2-OVEMB150205_14.comet.params",
+                "comet/2-OVEMB150205_14.mzid",
+                "comet/2-OVEMB150205_14.pin",
+                "comet/2-OVEMB150205_14.psm_utils.tsv",
+                "comet/percolator",
+                "comet/percolator/1-OVEMB150205_12.psm.decoy.pout",
+                "comet/percolator/1-OVEMB150205_12.psm.target.pout",
+                "comet/percolator/2-OVEMB150205_14.psm.decoy.pout",
+                "comet/percolator/2-OVEMB150205_14.psm.target.pout",
+                "openms",
+                "openms/yeast_UPS_decoy.fasta",
+                "pipeline_info",
+                "pipeline_info/nf_core_mspepid_software_versions.yml",
+                "thermorawfileparser",
+                "thermorawfileparser/1-OVEMB150205_12.mzML",
+                "thermorawfileparser/2-OVEMB150205_14.mzML"
+            ]
+        ],
+        "timestamp": "2026-04-30T12:57:40.447997351",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}

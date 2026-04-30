@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "ms2rescore_runms2rescore"
+description: MS2Rescore allows user-friendly AI-assisted rescoring of peptide identifications.
+keywords:
+  - proteomics
+  - spectrum identification
+  - rescoring
+  - spectrum prediction
+tools:
+  - "ms2rescore":
+      description: "Modular and user-friendly platform for AI-assisted rescoring of
+        peptide identifications."
+      homepage: "https://ms2rescore.readthedocs.io/en/stable"
+      documentation: "https://ms2rescore.readthedocs.io/en/stable"
+      tool_dev_url: "https://github.com/compomics/ms2rescore"
+      doi: "10.1021/acs.jproteome.3c00785"
+      licence: ["Apache-2.0"]
+      identifier: biotools:ms2rescore
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - mzml:
+        type: file
+        description: Spectrum file in mzML format
+        pattern: "*.{mzml, mzML}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3244"
+    - raw_spectra:
+        type: string
+        description: Spectrum file in the original format (e.g. Thermo RAW file, Bruker .d folder, etc.)
+        pattern: "*.{raw,RAW,d,D}"
+        ontologies: []
+    - psms_file:
+        type: file
+        description: PSMs in tab-separated format from psm-utils.
+        pattern: "*.tsv"
+        ontologies: []
+  - - model_dir:
+        type: directory
+        description: path to the directory containing the MS2PIP model files.
+        ontologies: []
+
+output:
+  pin:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.pin":
+          type: file
+          description: Peptides in pin format for Percolator input
+          pattern: "*.pin"
+          ontologies: []
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: http://edamontology.org/format_3750 # YAML
+
+authors:
+  - "@julianu"
+maintainers:
+  - "@julianu"

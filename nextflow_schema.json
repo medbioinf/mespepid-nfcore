@@ -38,6 +38,123 @@
                 }
             }
         },
+        "database_options": {
+            "title": "Database Options",
+            "type": "object",
+            "fa_icon": "fas fa-database",
+            "description": "Database settings, to specify the FASTA, create decoys and entrapments",
+            "properties": {
+                "fasta": {
+                    "type": "string",
+                    "fa_icon": "fas fa-file",
+                    "pattern": ".(fasta|faa)$",
+                    "description": "Input FASTA protein database",
+                    "help_text": "Path to the protein database file. Whether it already contains decoys is set by the --skip_decoy_generation parameter."
+                },
+                "entrapment_fold": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "This parameter specifies for an entrapment search the fold of entrapment proteins per target protein. No database will be created if 0."
+                },
+                "skip_decoy_generation": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Add this parameter when you want to skip the generation of the decoy database.",
+                    "help_text": "If you want to use your own decoys, you can specify a dataset that includes decoy sequences."
+                }
+            }
+        },
+        "general_search_parameters": {
+            "title": "General search parameters",
+            "type": "object",
+            "description": "Search parameters that are common to all search engines.",
+            "properties": {
+                "precursor_tol_ppm": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "The precursor tolerance in PPM"
+                },
+                "fragment_tol_da": {
+                    "type": "number",
+                    "default": 0.02,
+                    "description": "The fragment tolerance in Dalton"
+                }
+            }
+        },
+        "sage_search_parameters": {
+            "title": "Sage search parameters",
+            "type": "object",
+            "description": "Search parameters specific to Sage",
+            "properties": {
+                "sage_config_template": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to the Sage params file. If not set or null, the provided default in assets is used.",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "sage_prefilter": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the database should be split during Sage search. This greatly reduces memory consumption when using large databases (beta feature)"
+                },
+                "sage_prefilter_chunk_size": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of proteins per database chunk when prefiltering is active."
+                }
+            }
+        },
+        "identification_options": {
+            "title": "Select search engines to be executed",
+            "type": "object",
+            "description": "Enable/disable search engines.",
+            "properties": {
+                "run_comet": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables spectrum identification with Comet."
+                },
+                "run_sage": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables spectrum identification with Sage."
+                },
+                "comet_config_template": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "This is the default comet parameters file. In this file, parameters can be set, which are neither passed by common runtime (threads, fasta, ...) or by common search engine parameters. If not set or null, the provided default in assets is used.",
+                    "fa_icon": "fas fa-cogs"
+                }
+            }
+        },
+        "rescoring_options": {
+            "title": "Select rescoring algorithms to be executed",
+            "type": "object",
+            "description": "Enable/disable rescoring algorithms.",
+            "properties": {
+                "run_percolator": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables rescoring with Percolator. Some rescorings (MS2Rescore, Oktoberfest) depend on Percolator results, so Percolator will be run if any of these are enabled, even if this parameter is set to false."
+                },
+                "run_ms2rescore": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables rescoring with MS2Rescore."
+                },
+                "ms2rescore_model": {
+                    "type": "string",
+                    "default": "HCD",
+                    "description": "The MS2PIP model to use for MS2Rescore. Models can be found here: https://ms2pip.readthedocs.io/en/latest/prediction-models/"
+                },
+                "ms2rescore_model_dir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Optional directory with pre-downloaded MS2PIP model files. If set to null, the respective model is downloaded and saved in the results directory.",
+                    "fa_icon": "fas fa-folder-open"
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -166,6 +283,21 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/database_options"
+        },
+        {
+            "$ref": "#/$defs/general_search_parameters"
+        },
+        {
+            "$ref": "#/$defs/identification_options"
+        },
+        {
+            "$ref": "#/$defs/sage_search_parameters"
+        },
+        {
+            "$ref": "#/$defs/rescoring_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

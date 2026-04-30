@@ -4,7 +4,43 @@
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {
-                "nf-core": {}
+                "nf-core": {
+                    "comet": {
+                        "branch": "master",
+                        "git_sha": "f7a7cdc9bbb9c48cac6a0b2aa0fb46a9aadd8562",
+                        "installed_by": ["modules"]
+                    },
+                    "gunzip": {
+                        "branch": "master",
+                        "git_sha": "96c57dfd98a0641886a67bd449fe33ee2ec0e374",
+                        "installed_by": ["modules"]
+                    },
+                    "openms/decoydatabase": {
+                        "branch": "master",
+                        "git_sha": "7d3e5c9d3d4454e45f19868a20536b46e42f3314",
+                        "installed_by": ["modules"]
+                    },
+                    "thermorawfileparser": {
+                        "branch": "master",
+                        "git_sha": "28ed9d65d3c487772622645d6052bf623816b358",
+                        "installed_by": ["modules"]
+                    },
+                    "untar": {
+                        "branch": "master",
+                        "git_sha": "447f7bc0fa41dfc2400c8cad4c0291880dc060cf",
+                        "installed_by": ["modules"]
+                    },
+                    "unzip": {
+                        "branch": "master",
+                        "git_sha": "4dd9d8439a429c7ee566e0e2347f76ddeef27e66",
+                        "installed_by": ["modules"]
+                    },
+                    "unzipfiles": {
+                        "branch": "master",
+                        "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
+                        "installed_by": ["modules"]
+                    }
+                }
             },
             "subworkflows": {
                 "nf-core": {

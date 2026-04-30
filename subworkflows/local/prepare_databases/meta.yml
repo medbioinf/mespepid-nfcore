@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "prepare_databases"
+description: Prepare the protein sequence databases, like adding decoys and entrapment sequences
+keywords:
+  - protein
+  - decoy
+  - entrapment
+components:
+  - openms/decoydatabase
+input:
+  - ch_fasta:
+      type: file
+      description: |
+        The input FASTA protein database
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fasta,faa}"
+  - skip_decoy_generation:
+      type: boolean
+      description: |
+        Whether to skip the decoy generation step for the input FASTA file
+output:
+  - fasta:
+      type: file
+      description: |
+        FASTA database channel after optional decoy generation.
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fasta,faa}"
+  - versions:
+      type: list
+      description: |
+        Software version entries emitted by modules.
+        Structure: [ val(process), val(tool), val(version) ]
+authors:
+  - "@julianu"
+maintainers:
+  - "@julianu"
