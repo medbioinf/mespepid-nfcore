@@ -28,6 +28,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_mspe
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
 workflow NFCORE_MSPEPID {
+
     take:
     samplesheet // channel: samplesheet read in from --input
 
