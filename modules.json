@@ -20,6 +20,11 @@
                         "git_sha": "7d3e5c9d3d4454e45f19868a20536b46e42f3314",
                         "installed_by": ["modules"]
                     },
+                    "percolator": {
+                        "branch": "master",
+                        "git_sha": "0c4c59651e6eb4303be02c924057c33f3f3c0d55",
+                        "installed_by": ["modules"]
+                    },
                     "thermorawfileparser": {
                         "branch": "master",
                         "git_sha": "28ed9d65d3c487772622645d6052bf623816b358",
