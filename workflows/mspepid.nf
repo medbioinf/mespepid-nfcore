@@ -45,7 +45,7 @@ workflow MSPEPID {
     ch_fasta = ch_samplesheet.map { meta, _spectrum_file, fasta_file -> [meta, fasta_file] }
 
     // Deduplicate FASTAs by path: run PREPARE_DATABASES once per unique FASTA file.
-    // To later join the FASTAs back to then runs, meta gets a 'sample_ids' list of all run IDs
+    // To later join the FASTAs back to the runs, meta gets a 'sample_ids' list of all run IDs
     ch_fasta_dedup = ch_fasta
         .map { meta, fasta -> [fasta.toString(), meta.id, fasta] }
         .groupTuple(by: 0)
