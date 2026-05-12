@@ -18,6 +18,13 @@
                 "exists": true,
                 "pattern": "^\\S+\\.(raw|RAW|mzML|mzml|d|)(.tar.(gz|bz2)|.zip|.gz)?$",
                 "errorMessage": "MS file name, cannot contain spaces and must have one of the extensions: raw | RAW | mzML | d"
+            },
+            "fasta": {
+                "type": "string",
+                "format": "path",
+                "exists": true,
+                "pattern": "^\\S+\\.(fasta|fa|fas|faa)(\\.gz)?$",
+                "errorMessage": "FASTA file cannot contain spaces and must have one of the extensions: fasta | fa | fas | faa"
             }
         },
         "required": ["ID", "spectrum_file"]
