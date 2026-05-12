@@ -1,6 +1,7 @@
 include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR } from '../../../modules/nf-core/percolator/main'
 include { MS2RESCORE_GETMODEL } from '../../../modules/local/ms2rescore/getmodel/main'
 include { MS2RESCORE_RUNMS2RESCORE } from '../../../modules/local/ms2rescore/runms2rescore/main'
+include { OKTOBERFEST_GENERATEFEATURES } from '../../../modules/local/oktoberfest/generatefeatures/main'
 
 workflow SPECTRA_RESCORING {
     take:
@@ -8,10 +9,11 @@ workflow SPECTRA_RESCORING {
     searchengine_pins
     prepared_spectra
     fragment_tol_da
-    run_percolator // boolean: whether to run Percolator for rescoring
-    run_ms2rescore // boolean: whether to run MS2Rescore for rescoring
-    ms2rescore_model // string: which MS2Rescore model to use
-    ms2rescore_model_dir // string: optional directory containing pre-downloaded MS2PIP models
+    run_percolator          // boolean: whether to run Percolator for rescoring
+    run_ms2rescore          // boolean: whether to run MS2Rescore for rescoring
+    run_oktoberfest         // boolean: whether to run Oktoberfest for rescoring
+    ms2rescore_model        // string: which MS2Rescore model to use
+    ms2rescore_model_dir    // string: optional directory containing pre-downloaded MS2PIP models
 
     main:
     ch_versions = channel.empty()
@@ -69,6 +71,21 @@ workflow SPECTRA_RESCORING {
         ch_rescoring_out = ch_rescoring_out
             .mix(MS2RESCORE_PERCOLATOR.out.target_psms.map { meta, file -> [meta + [status: 'ms2rescore_target'], file] })
             .mix(MS2RESCORE_PERCOLATOR.out.decoy_psms.map { meta, file -> [meta + [status: 'ms2rescore_decoy'], file] })
+    }
+
+    // run Oktoberfest, if enabled
+    if (run_oktoberfest) {
+
+        // TODO: parameterize the oktoberfest models
+        ch_oktoberfest_in = ch_rescoring_in.map { meta, mzml, raw_spectra, psmutils_tsv ->
+            [meta + [outdir: meta.searchengine + "/oktoberfest", oktoberfest_intensity_model: "Prosit_2020_intensity_HCD", oktoberfest_irt_model: "Prosit_2019_irt", fragment_tol_da: fragment_tol_da], mzml, raw_spectra, psmutils_tsv]
+        }
+
+        OKTOBERFEST_GENERATEFEATURES(
+            ch_oktoberfest_in,
+        )
+        ch_versions = ch_versions.mix(OKTOBERFEST_GENERATEFEATURES.out.versions)
+
     }
 
     emit:
