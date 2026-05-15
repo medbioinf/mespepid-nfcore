@@ -35,7 +35,7 @@ The pipeline is designed as a modular, identification-focused building block tha
    - [`Sage`](https://github.com/lazear/sage)
 5. Convert search engine results to a common PSM format ([`psm-utils`](https://psm-utils.readthedocs.io/))
 6. PSM rescoring (more to come):
-   - [`Percolator`](https://percolator.ms/) - semi-supervised machine learning for PSM re-ranking and FDR estimation
+   - [`Percolator`](https://github.com/percolator/percolator) - semi-supervised machine learning for PSM re-ranking and FDR estimation
    - [`MS2Rescore`](https://ms2rescore.readthedocs.io/) - MS2PIP spectral prediction-based feature generation followed by Percolator
 
 ## Usage

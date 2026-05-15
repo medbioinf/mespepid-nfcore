@@ -81,7 +81,7 @@ PSMs from each search engine are rescored independently. Output directories are 
 
 </details>
 
-[Percolator](https://percolator.ms/) applies semi-supervised machine learning (using a SVM) to re-rank PSMs using search engine scores and auxiliary features, then estimates FDR using a target-decoy competition approach.
+[Percolator](https://github.com/percolator/percolator) applies semi-supervised machine learning (using a SVM) to re-rank PSMs using search engine scores and auxiliary features, then estimates FDR using a target-decoy competition approach.
 
 ### MS2Rescore / Tims2Rescore
 
