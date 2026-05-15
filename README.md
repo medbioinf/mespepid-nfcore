@@ -21,47 +21,47 @@
 
 ## Introduction
 
-**nf-core/mspepid** is a bioinformatics pipeline that ...
+**nf-core/mspepid** is a bioinformatics pipeline for the identification of peptides in mass spectrometry (MS)-based proteomics and peptidomics data. It takes a samplesheet with MS data files (Thermo `.raw`, Bruker TimsTOF `.d`, or open-standard `.mzML`) and a protein sequence database (FASTA) as input, runs one or more configurable database search engines, and performs post-processing with machine learning-based rescoring to produce high-confidence, FDR-filtered peptide-spectrum matches (PSMs).
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+The pipeline is designed as a modular, identification-focused building block that can in the future feed into downstream quantification or statistical pipelines such as [nf-core/quantms](https://nf-co.re/quantms) and [nf-core/msproteomics](https://nf-co.re/msproteomics).
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/community/brand/workflow-schematics#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
+1. Optional: Create entrapment database for FDR benchmarking ([`FDRBench`](https://github.com/percolator/fdrBench))
+2. Generate decoy sequences ([`OpenMS DecoyDatabase`](https://www.openms.de/)) — skipped with `--skip_decoy_generation` if decoys are already present
+3. Convert vendor spectrum formats to mzML:
+   - [`ThermoRawFileParser`](https://github.com/compomics/ThermoRawFileParser) for Thermo `.raw` files
+   - [`tdf2mzml`](https://github.com/theGreatHerrLebert/tdf2mzml) for Bruker `.d` folders
+4. Peptide-spectrum match (PSM) identification with one or more database search engines (more to come):
+   - [`Comet`](https://uwpr.github.io/Comet/)
+   - [`Sage`](https://github.com/lazear/sage)
+5. Convert search engine results to a common PSM format ([`psm-utils`](https://psm-utils.readthedocs.io/))
+6. PSM rescoring (more to come):
+   - [`Percolator`](https://percolator.ms/) - semi-supervised machine learning for PSM re-ranking and FDR estimation
+   - [`MS2Rescore`](https://ms2rescore.readthedocs.io/) - MS2PIP spectral prediction-based feature generation followed by Percolator
 
 ## Usage
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/get_started/environment_setup/overview) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/get_started/run-your-first-pipeline) with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
-
 First, prepare a samplesheet with your input data that looks as follows:
 
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+ID,spectrum_file,fasta
+1,/path/to/run1.raw,/path/to/proteins.fasta
+2,/path/to/run2.mzML,/path/to/proteins.fasta
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
--->
+Each row represents one MS run. The `ID` column must be a unique integer. The `spectrum_file` column accepts Thermo `.raw`, Bruker TimsTOF `.d`, and `.mzML` files (with optional `.gz`, `.zip`, or `.tar.gz` compression). The `fasta` column is optional per row — use `--fasta` to apply a single protein database to all runs instead.
 
 Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
 nextflow run nf-core/mspepid \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
+   --fasta proteins.fasta \
    --outdir <OUTDIR>
 ```
 
@@ -76,9 +76,12 @@ To see the results of an example test run with a full size dataset refer to the 
 For more details about the output files and reports, please refer to the
 [output documentation](https://nf-co.re/mspepid/output).
 
+The main outputs are Percolator-scored PSM files (`.pout`) organised by search engine and rescoring strategy.
+For each enabled search engine and rescoring method, results are written to `<outdir>/<searchengine>/` and respective subfolders `<outdir>/<searchengine>/<rescoring>/`.
+
 ## Credits
 
-nf-core/mspepid was originally written by Julian Uszkoreit.
+nf-core/mspepid was originally written by the team of the Medical Bioinformatics, Ruhr University Bochum, ([@medbioinf](https://github.com/medbioinf)).
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
