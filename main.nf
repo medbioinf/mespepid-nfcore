@@ -30,7 +30,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_mspe
 workflow NFCORE_MSPEPID {
 
     take:
-    samplesheet // channel: samplesheet read in from --input
+    samplesheet // channel: [meta, spectrum_file, fasta_file] read in from --input
 
     main:
 
@@ -40,7 +40,6 @@ workflow NFCORE_MSPEPID {
     MSPEPID(
         samplesheet,
         params.outdir,
-        params.fasta,
         params.entrapment_fold,
         params.skip_decoy_generation,
         params.precursor_tol_ppm,

@@ -47,9 +47,9 @@
                 "fasta": {
                     "type": "string",
                     "fa_icon": "fas fa-file",
-                    "pattern": ".(fasta|faa)$",
-                    "description": "Input FASTA protein database",
-                    "help_text": "Path to the protein database file. Whether it already contains decoys is set by the --skip_decoy_generation parameter."
+                    "pattern": "^\\S+\\.(fasta|fa|fas|faa)(.gz)?$",
+                    "description": "Global input FASTA protein database (mutually exclusive with per-run 'fasta' column in the samplesheet)",
+                    "help_text": "Path to a single protein database file applied to all MS runs. Cannot be used together with the 'fasta' column in the samplesheet. Whether the file already contains decoys is controlled by --skip_decoy_generation."
                 },
                 "entrapment_fold": {
                     "type": "integer",

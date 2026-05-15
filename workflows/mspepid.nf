@@ -20,9 +20,8 @@ include { SPECTRA_RESCORING      } from '../subworkflows/local/spectra_rescoring
 
 workflow MSPEPID {
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    ch_samplesheet    // channel: [meta, spectrum_file, fasta_file] read in from --input
     outdir
-    fasta // string: path to fasta file
     entrapment_fold // integer: fold for entrapment generation, 0 for none
     skip_decoy_generation // boolean: whether to skip decoy generation
     precursor_tol_ppm // integer: Precursor mass tolerance in ppm for spectra identification
@@ -42,28 +41,40 @@ workflow MSPEPID {
 
     def ch_versions = channel.empty()
 
-    // create channel for fasta input
-    ch_fasta = channel.fromPath(fasta, checkIfExists: true)
-        .map { fa -> [[id: fa.getBaseName()], fa] }
+    // Extract fasta from the samplesheet channel
+    ch_fasta = ch_samplesheet.map { meta, _spectrum_file, fasta_file -> [meta, fasta_file] }
+
+    // Deduplicate FASTAs by path: run PREPARE_DATABASES once per unique FASTA file.
+    // To later join the FASTAs back to the runs, meta gets a 'sample_ids' list of all run IDs
+    ch_fasta_dedup = ch_fasta
+        .map { meta, fasta -> [fasta.toString(), meta.id, fasta] }
+        .groupTuple(by: 0)
+        .map { _path_key, sample_ids, fastas ->
+            [[id: fastas[0].getBaseName(), sample_ids: sample_ids], fastas[0]]
+        }
 
     // prepare the databases: decoy generation and entrapment database creation
     PREPARE_DATABASES(
-        ch_fasta,
+        ch_fasta_dedup,
         entrapment_fold,
         skip_decoy_generation,
     )
-    ch_fasta_db = PREPARE_DATABASES.out.fasta
+    // create one [sample_id, db_fasta] for each sample_id in the original samplesheet
+    ch_fasta_db_per_run = PREPARE_DATABASES.out.fasta
+        .flatMap { db_meta, db_fasta ->
+            db_meta.sample_ids.collect { run_id -> [run_id, db_fasta] }
+        }
 
-    // prepare the spectra files
+    // prepare the spectra files (strip the fasta_file before passing to PREPARE_SPECTRA)
     PREPARE_SPECTRA(
-        ch_samplesheet
+        ch_samplesheet.map { meta, spectrum_file, _fasta_file -> [meta, spectrum_file] }
     )
     ch_prepared_spectra = PREPARE_SPECTRA.out.mzmls.join(PREPARE_SPECTRA.out.uncompressed, by: 0)
 
     // spectra identification
     SPECTRA_IDENTIFICATION(
-        ch_fasta_db,
         ch_prepared_spectra,
+        ch_fasta_db_per_run,
         precursor_tol_ppm,
         fragment_tol_da,
         run_comet,

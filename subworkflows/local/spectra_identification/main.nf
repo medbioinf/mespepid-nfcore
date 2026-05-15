@@ -7,8 +7,8 @@ include { PSMUTILSCONVERSIONS } from '../../../modules/local/psmutilsconversions
 
 workflow SPECTRA_IDENTIFICATION {
     take:
-    ch_fasta
-    ch_spectra_files // val(meta), path(mzml), path(raw_spectra)
+    ch_spectra_files    // val(meta), path(mzml), path(raw_spectra)
+    ch_fasta_db         // channel: [sample_id, db_fasta] one item per sample
     precursor_tol_ppm
     fragment_tol_da
     run_comet
@@ -21,13 +21,14 @@ workflow SPECTRA_IDENTIFICATION {
     main:
     ch_versions = channel.empty()
 
-    // TODO: this will become the identifications, probably with some meta mapping?
+    // this will contain the identifications, with some meta data
     ch_identifications = channel.empty()
 
-    // prepare the input channel for identifications
-    // TODO: this right now only adds the fasta - must be adapted for per sample DB
-    // TODO: also adapt for per-sample parameters
-    ch_ident_in = ch_spectra_files.combine(ch_fasta.map { _meta, fasta -> [fasta] })
+    // join each spectrum file with its per-run database FASTA
+    ch_ident_in = ch_spectra_files
+        .map { meta, mzml, raw -> [meta.id, meta, mzml, raw] }
+        .join(ch_fasta_db, by: 0)
+        .map { _id, meta, mzml, raw, fasta -> [meta, mzml, raw, fasta] }
 
     // run Comet, if enabled
     if (run_comet) {
@@ -71,15 +72,19 @@ workflow SPECTRA_IDENTIFICATION {
         )
         ch_versions = ch_versions.mix(SAGECONFIG.out.versions_python)
 
-        ch_sage_spectra = ch_spectra_files.map { meta, mzml, _raw_spectra -> [meta, mzml] }
-        // add empty meta information for compatibility and convert to value channel
-        ch_sage_config = SAGECONFIG.out.config.map { config -> [["ID": "SAGE_CONFIG"], config] }.first()
-        // convert to value channel
-        ch_sage_fasta = ch_fasta.first()
+        ch_sage_config = SAGECONFIG.out.config.map { config -> [['ID': 'SAGE_CONFIG'], config] }.first()
+
+        // Re-use ch_ident_in (already joined with per-run fasta) and split into
+        // the two separate channels SAGEBETA requires.
+        ch_sage_joined = ch_ident_in
+            .multiMap { meta, mzml, _raw, fasta ->
+                spectra: [meta, mzml]
+                fasta:   [[id: fasta.getBaseName()], fasta]
+            }
 
         SAGEBETA(
-            ch_sage_spectra,
-            ch_sage_fasta,
+            ch_sage_joined.spectra,
+            ch_sage_joined.fasta,
             ch_sage_config,
         )
         ch_versions = ch_versions.mix(SAGEBETA.out.versions_sagebeta)
