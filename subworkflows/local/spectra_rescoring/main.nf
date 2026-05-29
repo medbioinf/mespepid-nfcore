@@ -86,6 +86,8 @@ workflow SPECTRA_RESCORING {
         )
         ch_versions = ch_versions.mix(OKTOBERFEST_GENERATEFEATURES.out.versions)
 
+        // TODO: remove the lds (?) feature before running Percolator - maybe already in the process before?
+
     }
 
     emit:

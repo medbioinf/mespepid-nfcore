@@ -3,9 +3,9 @@
 """
 Generates features for PSM-rescoring using Oktoberfest.
 The rescoring itself is suppresed by setting an unknown FDR estimation method.
+Percolator or similar needs to be run afterwards.
 """
 
-import argparse
 import copy
 from functools import reduce
 import json
@@ -16,13 +16,14 @@ from time import sleep
 from typing import Union
 
 import oktoberfest as ok
-from oktoberfest.runner import _preprocess, _ce_calib, _refinement_learn, _calculate_features
+from oktoberfest.runner import _ce_calib, _calculate_features
 from oktoberfest.utils import Config, JobPool, ProcessStep
 from oktoberfest import rescore as ok_re
 from oktoberfest import preprocessing as ok_pp
 import pandas as pd
 import psm_utils
 import psm_utils.io
+from spectrum_io.file import csv
 import tritonclient
 
 
@@ -85,55 +86,67 @@ def get_scan_id(spectrum_id: str, scan_id_regex: re.Pattern) -> int:
         raise ValueError(f"Could not extract scan number from spectrum ID: {spectrum_id}")
     return int(match.group("scan_id"))
 
-def argparse_setup() -> argparse.Namespace:
+
+def preprocess_spectra(spectra_files: list[Path], config: Config) -> list[Path]:
     """
-    Creates the argument parser for the Oktoberfest feature generation script.
+    Preprocess spectra files for feature generation.
+    This code is copied and adapted from the Oktoberfest's "runner.py" [_preprocess]
     """
 
-    parser = argparse.ArgumentParser()
-    # files
-    parser.add_argument(
-        "-psms-file", help="Input PSMs TSV file", required=True, type=Path
-    )
-    parser.add_argument(
-        "-spectra-file",
-        help="Corresponding spectrum file for PSMs file",
-        required=True,
-        type=Path,
-    )
+    preprocess_search_step = ProcessStep(config.output, "preprocessing_search")
+    if not preprocess_search_step.is_done():
+        # load search results
+        logging.info(f"Converting search results from {config.search_results} to internal search result.")
+        msms_output = config.output / "msms"
+        msms_output.mkdir(exist_ok=True)
+        internal_search_file = msms_output / "msms.prosit"
 
-    # prediction
-    parser.add_argument("-intensity-model", help="Koina intensity model", type=str)
-    parser.add_argument("-irt-model", help="Koina IRT model", type=str)
+        # as we only have internal format, we skip the "conversion" and basically copy the file
+        search_results = pd.read_csv(config.search_results)
+        csv.write_file(search_results, internal_search_file)
 
-    # mass spec parameters
-    parser.add_argument(
-        "-mass-tolerance",
-        help="Defines the allowed tolerance between theoretical and experimentally observered fragment mass during peak annotation; default = 20 (FTMS), 40 (TOF), 0.35 (ITMS)",
-        default=20,
-        type=float,
-    )
-    parser.add_argument(
-        "-mass-tolerance-unit",
-        help="Defines the measure of tolerance, either “da” or “ppm”; default = da (mass analyzer is ITMS), ppm (mass analyzer is FTMS or TOF)",
-        type=str,
-        choices=["da", "ppm"],
-    )
+        if config.spectra_type.lower() in ["d", "hdf"]:
+            timstof_metadata = ok_pp.convert_timstof_metadata(
+                input_path=config.search_results,
+                search_engine=config.search_results_type,
+                output_file=msms_output / "tims_meta.csv",
+            )
 
-    parser.add_argument(
-        "-scan-id-regex",
-        help=(
-            "Regular expression to extract the scan number from the spectrum ID."
-            "Use `scan_id` for the matching group, e.g. `scan=(?P<scan_id>\\d+)`)"
-        ),
-        type=str,
-    )
+        # TODO add support for internal timstof metadata
+        logging.info(f"Read {len(search_results)} PSMs from {internal_search_file}")
+        model_type = config.models["intensity"]
+        try:
+            search_results = ok_pp.filter_peptides_for_model(peptides=search_results, model=model_type)
+        except ValueError:
+            logging.exception(
+                ValueError(
+                    f"Unknown model {model_type}. Please ensure it is one of ['prosit', 'ms2pip', 'alphapept']."
+                    "If you're using local prediction, please ensure the model type is contained in the model file name."
+                )
+            )
 
-    parser.add_argument(
-        "-out-folder", help="Output folder for ", required=True, type=Path
-    )
+        # split search results
+        searchfiles_found = ok_pp.split_search(
+            search_results=search_results,
+            output_dir=config.output / "msms",
+            filenames=[spectra_file.stem for spectra_file in spectra_files],
+        )
+        # split timstof metadata
+        if config.spectra_type.lower() in ["d", "hdf"]:
+            _ = ok_pp.split_timstof_metadata(
+                timstof_metadata=timstof_metadata,
+                output_dir=config.output / "msms",
+                filenames=searchfiles_found,
+            )
+        preprocess_search_step.mark_done()
+    else:
+        searchfiles_found = [msms_file.stem for msms_file in (config.output / "msms").glob("*rescore")]
+    spectra_files_to_return = []
+    for spectra_file in spectra_files:
+        if spectra_file.stem in searchfiles_found:
+            spectra_files_to_return.append(spectra_file)
 
-    return parser.parse_args()
+    return spectra_files_to_return
 
 
 def feature_generation(config_path: Union[str, Path]):
@@ -146,6 +159,7 @@ def feature_generation(config_path: Union[str, Path]):
     config_path : Union[str, Path]
         Path to the configuration file for Oktoberfest. This file should contain all necessary parameters for the
     """
+
     config = Config()
     config.read(config_path)
     config.check()
@@ -156,7 +170,7 @@ def feature_generation(config_path: Union[str, Path]):
     proc_dir = config.output / "proc"
     proc_dir.mkdir(parents=True, exist_ok=True)
 
-    spectra_files = _preprocess(spectra_files, config)
+    spectra_files = preprocess_spectra(spectra_files, config)
 
     # TODO is this the most elegant way to multi-thread CE calibration before running refinement learning?
     # Should we store the returned libraries and pass them to _calculate_features and _refinement_learn instead of
@@ -170,8 +184,8 @@ def feature_generation(config_path: Union[str, Path]):
         for spectra_file in spectra_files:
             _ = _ce_calib(spectra_file, config)
 
-    if config.do_refinement_learning:
-        _refinement_learn(spectra_files, config)
+    # TODO: check whether `_refinement_learn` was ever used, what is it needed for?
+    #_refinement_learn(spectra_files, config)
 
     if config.num_threads > 1:
         processing_pool = JobPool(processes=config.num_threads)
@@ -224,13 +238,13 @@ def main():
     The resulting features can be found as `<output_folder>/none/rescore.tab`
     """
 
-    args = argparse_setup()
     logging.basicConfig(level=logging.INFO)
-    scan_id_regex = re.compile(args.scan_id_regex)
 
-    oktoberfest_input_csv_path = args.psms_file.with_suffix(".oktoberfest.input.csv")
+    # Regular expression to extract the scan number from the spectrum ID. Use `scan_id` for the matching group, e.g. `scan=(?P<scan_id>\\d+)`)
+    scan_id_regex = re.compile("${scan_id_pattern}")
 
-    psms = psm_utils.io.read_file(args.psms_file)
+    oktoberfest_input_csv_path = Path("${psms_file}").with_suffix(".oktoberfest.input.csv")
+    psms = psm_utils.io.read_file("${psms_file}")
 
     # Necessary columns according to the docs:
     # RAW_FILE,SCAN_NUMBER,MODIFIED_SEQUENCE,PRECURSOR_CHARGE,
@@ -238,7 +252,7 @@ def main():
     oktoberfest_df = pd.DataFrame()
 
     # RAW_FILE,
-    oktoberfest_df["RAW_FILE"] = [args.spectra_file.stem] * len(psms)
+    oktoberfest_df["RAW_FILE"] = [Path("${spectra_file}").stem] * len(psms)
 
     # SCAN_NUMBER
     oktoberfest_df["SCAN_NUMBER"] = [get_scan_id(psm.spectrum_id, scan_id_regex) for psm in psms]
@@ -263,7 +277,6 @@ def main():
     oktoberfest_df["MASS"] = [psm.peptidoform.theoretical_mass for psm in psms]
 
     # SCORE
-    # TODO: Does the psmutil score means higher is better?
     oktoberfest_df["SCORE"] = [psm.score for psm in psms]
 
     # REVERSE
@@ -278,7 +291,7 @@ def main():
     # free up some memory
     del psms
 
-    psms_df = pd.read_csv(args.psms_file, sep="\t")
+    psms_df = pd.read_csv(Path("${psms_file}"), sep="\t")
 
     # PROTEINS (not in the docs, but required by oktberfest)
     oktoberfest_df["PROTEINS"] = psms_df["protein_list"].apply(
@@ -320,18 +333,18 @@ def main():
     config_dict = copy.deepcopy(ok.utils.example_configs.RESCORING)
 
     # misc
-    config_dict["output"] = str(args.out_folder)
+    config_dict["output"] = "${out_folder}"
     config_dict["numThreads"] = 1  # Set to 1 for debugging, can be increased later
     # mass spec parameters
-    config_dict["massTolerance"] = args.mass_tolerance
-    config_dict["unitMassTolerance"] = args.mass_tolerance_unit
+    config_dict["massTolerance"] = float("${mass_tolerance}")
+    config_dict["unitMassTolerance"] = "${mass_tolerance_unit}"
     # predicition params
-    config_dict["models"]["irt"] = args.irt_model
-    config_dict["models"]["intensity"] = args.intensity_model
+    config_dict["models"]["irt"] = "${irt_model}"
+    config_dict["models"]["intensity"] = "${intensity_model}"
     # input params
     config_dict["inputs"]["search_results"] = str(oktoberfest_input_csv_path)
     config_dict["inputs"]["search_results_type"] = "Internal"
-    config_dict["inputs"]["spectra"] = str(args.spectra_file)
+    config_dict["inputs"]["spectra"] = "${spectra_file}"
     config_dict["inputs"]["spectra_type"] = "mzml"
     # Setting this to none has the effect, that the generated features
     # are stored in the subfolder `results/none` of the output folder.

@@ -48,6 +48,7 @@ workflow NFCORE_MSPEPID {
         params.run_sage,
         params.run_percolator,
         params.run_ms2rescore,
+        params.run_oktoberfest,
         params.comet_config_template,
         params.sage_config_template,
         params.sage_prefilter_chunk_size,

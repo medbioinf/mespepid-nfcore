@@ -142,6 +142,11 @@
                     "default": true,
                     "description": "Enables rescoring with MS2Rescore."
                 },
+                "run_oktoberfest": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables rescoring with Oktoberfest."
+                },
                 "ms2rescore_model": {
                     "type": "string",
                     "default": "HCD",

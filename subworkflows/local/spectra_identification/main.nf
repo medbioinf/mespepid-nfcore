@@ -7,8 +7,8 @@ include { PSMUTILSCONVERSIONS } from '../../../modules/local/psmutilsconversions
 
 workflow SPECTRA_IDENTIFICATION {
     take:
-    ch_spectra_files    // val(meta), path(mzml), path(raw_spectra)
-    ch_fasta_db         // channel: [sample_id, db_fasta] one item per sample
+    ch_spectra_files // val(meta), path(mzml), path(raw_spectra)
+    ch_fasta_db // channel: [sample_id, db_fasta] one item per sample
     precursor_tol_ppm
     fragment_tol_da
     run_comet
@@ -55,7 +55,8 @@ workflow SPECTRA_IDENTIFICATION {
                 def spectrumPattern = meta.vendor.toString() == 'bruker'
                     ? '.*index=(\\d+)$'
                     : '.*scan=(\\d+)$'
-                [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: spectrumPattern], mzid]
+                def scanIdPattern = '^(?P<scan_id>\\d+)$'
+                [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: spectrumPattern, scan_id_pattern: scanIdPattern], mzid]
             }
         )
     }
@@ -76,11 +77,10 @@ workflow SPECTRA_IDENTIFICATION {
 
         // Re-use ch_ident_in (already joined with per-run fasta) and split into
         // the two separate channels SAGEBETA requires.
-        ch_sage_joined = ch_ident_in
-            .multiMap { meta, mzml, _raw, fasta ->
-                spectra: [meta, mzml]
-                fasta:   [[id: fasta.getBaseName()], fasta]
-            }
+        ch_sage_joined = ch_ident_in.multiMap { meta, mzml, _raw, fasta ->
+            spectra: [meta, mzml]
+            fasta: [[id: fasta.getBaseName()], fasta]
+        }
 
         SAGEBETA(
             ch_sage_joined.spectra,
@@ -90,7 +90,7 @@ workflow SPECTRA_IDENTIFICATION {
         ch_versions = ch_versions.mix(SAGEBETA.out.versions_sagebeta)
         ch_identifications = ch_identifications.mix(
             SAGEBETA.out.tsv.map { meta, tsv ->
-                [meta + [searchengine: 'sage', idfile_type: 'sage_tsv', spectrum_id_pattern: '(.*)'], tsv]
+                [meta + [searchengine: 'sage', idfile_type: 'sage_tsv', spectrum_id_pattern: '(.*)', scan_id_pattern: '.*scan=(?P<scan_id>\\d+)$'], tsv]
             }
         )
     }
