@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 """
-Generates features for PSM-rescoring using Oktoberfest.
-The rescoring itself is suppresed by setting an unknown FDR estimation method.
+Generates features for PSM-rescoring using Oktoberfest and formet the result int a Percolator PIN
+The rescoring itself is suppressed by setting an unknown FDR estimation method.
 Percolator or similar needs to be run afterwards.
 """
 
@@ -14,6 +14,8 @@ from pathlib import Path
 import re
 from time import sleep
 from typing import Union
+import platform
+from importlib.metadata import version
 
 import oktoberfest as ok
 from oktoberfest.runner import _ce_calib, _calculate_features
@@ -26,6 +28,19 @@ import psm_utils.io
 from spectrum_io.file import csv
 import tritonclient
 
+
+COLS_TO_REMOVE = [
+    "filename",     # str column
+    "lda_scores"    # the LDA score
+]
+"""Columns to remove from the Oktoberfest feature file.
+E.g. due to wrong type or because they cause Percolator to perform weird
+"""
+
+COLS_TO_RENAME = {
+    "SpecId": "id",
+}
+"""Columns to rename in the Oktoberfest feature file."""
 
 OKTOBERFEST_RETRIES = 5
 """Number of retries for the oktberfest job in case of a server error."""
@@ -230,6 +245,26 @@ def feature_generation(config_path: Union[str, Path]):
         prepare_tab_rescore_step.mark_done()
 
 
+def format_yaml_like(data: dict, indent: int = 0) -> str:
+    """Formats a dictionary to a YAML-like string.
+
+    Args:
+        data (dict): The dictionary to format.
+        indent (int): The current indentation level.
+
+    Returns:
+        str: A string formatted as YAML.
+    """
+    yaml_str = ""
+    for key, value in data.items():
+        spaces = "  " * indent
+        if isinstance(value, dict):
+            yaml_str += f"{spaces}{key}:\\n{format_yaml_like(value, indent + 1)}"
+        else:
+            yaml_str += f"{spaces}{key}: {value}\\n"
+    return yaml_str
+
+
 def main():
     """
     Generates features for PSM-rescoring using Oktoberfest.
@@ -291,7 +326,7 @@ def main():
     # free up some memory
     del psms
 
-    psms_df = pd.read_csv(Path("${psms_file}"), sep="\t")
+    psms_df = pd.read_csv(Path("${psms_file}"), sep="\\t")
 
     # PROTEINS (not in the docs, but required by oktberfest)
     oktoberfest_df["PROTEINS"] = psms_df["protein_list"].apply(
@@ -371,6 +406,40 @@ def main():
         logging.error("Oktoberfest job failed after multiple retries.")
         exit(101)
 
+
+    # now, converts Oktoberfest feature files to Percolator's PIN file
+
+    # feature dataframe
+    features_file = f"{config_dict['output']}/results/none/rescore.tab"
+    feature_df = pd.read_csv(features_file, sep="\\t")
+
+    for col in COLS_TO_REMOVE:
+        if col in feature_df.columns:
+            feature_df.drop(columns=col, inplace=True)
+
+    for col, new_col in COLS_TO_RENAME.items():
+        if col in feature_df.columns:
+            feature_df.rename(columns={col: new_col}, inplace=True)
+
+    for col in feature_df.columns:
+        feature_df.rename(columns={col: col.lower()}, inplace=True)
+
+    feature_df.to_csv(
+        "${prefix}.pin",
+        sep="\\t",
+        index=False,
+    )
+
+
+    # finally, output versions in YML file
+    versions = {
+        "${task.process}": {
+            "python": platform.python_version(),
+            "oktoberfest": version("oktoberfest"),
+        }
+    }
+    with open("versions.yml", "w") as f:
+        f.write(format_yaml_like(versions))
 
 if __name__ == "__main__":
     main()

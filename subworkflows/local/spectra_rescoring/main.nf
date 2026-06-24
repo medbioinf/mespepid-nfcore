@@ -1,4 +1,4 @@
-include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR } from '../../../modules/nf-core/percolator/main'
+include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR ; PERCOLATOR as OKTOBERFEST_PERCOLATOR} from '../../../modules/nf-core/percolator/main'
 include { MS2RESCORE_GETMODEL } from '../../../modules/local/ms2rescore/getmodel/main'
 include { MS2RESCORE_RUNMS2RESCORE } from '../../../modules/local/ms2rescore/runms2rescore/main'
 include { OKTOBERFEST_GENERATEFEATURES } from '../../../modules/local/oktoberfest/generatefeatures/main'
@@ -86,7 +86,15 @@ workflow SPECTRA_RESCORING {
         )
         ch_versions = ch_versions.mix(OKTOBERFEST_GENERATEFEATURES.out.versions)
 
-        // TODO: remove the lds (?) feature before running Percolator - maybe already in the process before?
+        ch_percolator_oktoberfest_in = OKTOBERFEST_GENERATEFEATURES.out.pin.map { meta, pin ->
+            [meta + [status: 'oktoberfest', outdir: meta.searchengine + "/oktoberfest"], pin]
+        }
+        OKTOBERFEST_PERCOLATOR(
+            ch_percolator_oktoberfest_in
+        )
+        ch_rescoring_out = ch_rescoring_out
+            .mix(OKTOBERFEST_PERCOLATOR.out.target_psms.map { meta, file -> [meta + [status: 'oktoberfest_target'], file] })
+            .mix(OKTOBERFEST_PERCOLATOR.out.decoy_psms.map { meta, file -> [meta + [status: 'oktoberfest_decoy'], file] })
 
     }
 

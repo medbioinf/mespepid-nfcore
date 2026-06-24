@@ -10,14 +10,14 @@ process OKTOBERFEST_GENERATEFEATURES {
     tuple val(meta), path(mzml), path(raw_spectra), path(psms_file)
 
     output:
-    tuple val(meta), path("*.pin"), emit: pin
+    tuple val(meta), path("${prefix}.pin"), emit: pin
     path "versions.yml", emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = task.ext.prefix ?: "${meta.id}"
     // Regular expression pattern to extract the scan number from the spectrum ID. Use `scan_id` for the matching group, e.g. `scan=(?P<scan_id>\\d+)`)
     scan_id_pattern = meta.scan_id_pattern ?: '^(?P<scan_id>\\d+)$'
     // use mzML if given, otherwise use raw spectra
@@ -34,8 +34,14 @@ process OKTOBERFEST_GENERATEFEATURES {
     intensity_model = meta.oktoberfest_intensity_model ?: "Prosit_2020_intensity_HCD"
     template 'oktoberfest_feature_gen.py'
 
+    // TODO: feature generation works, but:
+    // - percolator is called in a step somewhere?
+    // - features are not converted into pin yet
+    // - also remove the lda_score from pin directly
+    // - versions.yml not yet created
+    // - add a way to specifiy the koina server (there is now also https://koina.bi.denbi.de, or local)
+
     stub:
-    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch ${prefix}.pin
 
