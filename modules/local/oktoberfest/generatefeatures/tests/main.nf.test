@@ -91,48 +91,63 @@ nextflow_process {
 
         then {
             assertAll(
-                { assert process.success }
-                //{ assert snapshot(sanitizeOutput(process.out)).match() }
+                { assert process.success },
+                {
+                    def lines = path(process.out.pin[0][1]).readLines()
+                    def header = lines[0]
+                    // sort by column 3 (scannr)
+                    def sortedRows = lines.tail().sort { it.split('\t')[2].toInteger() }
+                    // Round decimal fields to 4 places to tolerate minor float drift;
+                    // leave integer-valued fields (no '.') untouched.
+                    def roundedRows = sortedRows.collect { row ->
+                        row.split('\t').collect { field ->
+                            (field.contains('.') && field.isDouble())
+                                ? String.format("%.4f", field.toDouble())
+                                : field
+                        }.join('\t')
+                    }
+                    snapshot(header, roundedRows).match("pin_content")
+                }
             )
         }
     }
 
-    // test("oktoberfest generatefeatures - stub") {
+    test("oktoberfest generatefeatures - stub") {
 
-    //     options "-stub"
+        options "-stub"
 
-    //     when {
-    //         process {
-    //             """
-    //             ch_prepared_spectra_by_id = channel.of([
-    //                 [ id:'test'],
-    //                 file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.mzML', checkIfExists: true),
-    //                 file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.raw', checkIfExists: true)
-    //             ])
+        when {
+            process {
+                """
+                ch_prepared_spectra_by_id = channel.of([
+                    [ id:'test'],
+                    file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.mzML', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.raw', checkIfExists: true)
+                ])
 
-    //             ch_psmutils_tsvs_by_id = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, psmutils_tsv -> [meta.id, meta, psmutils_tsv] }
+                ch_psmutils_tsvs_by_id = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, psmutils_tsv -> [meta.id, meta, psmutils_tsv] }
 
-    //             input[0] = ch_prepared_spectra_by_id
-    //                 .combine(ch_psmutils_tsvs_by_id, by: 0)
-    //                 .map { _id, spectra_meta, mzml, raw_spectra, psm_meta, psmutils_tsv ->
-    //                     [spectra_meta + psm_meta + [
-    //                             outdir: "comet/oktoberfest",
-    //                             oktoberfest_intensity_model: "Prosit_2020_intensity_HCD",
-    //                             oktoberfest_irt_model: "Prosit_2019_irt",
-    //                             fragment_tol_da: 0.2
-    //                     ],
-    //                     mzml, raw_spectra, psmutils_tsv]
-    //                 }
-    //             """
-    //         }
-    //     }
+                input[0] = ch_prepared_spectra_by_id
+                    .combine(ch_psmutils_tsvs_by_id, by: 0)
+                    .map { _id, spectra_meta, mzml, raw_spectra, psm_meta, psmutils_tsv ->
+                        [spectra_meta + psm_meta + [
+                                outdir: "comet/oktoberfest",
+                                oktoberfest_intensity_model: "Prosit_2020_intensity_HCD",
+                                oktoberfest_irt_model: "Prosit_2019_irt",
+                                fragment_tol_da: 0.2
+                        ],
+                        mzml, raw_spectra, psmutils_tsv]
+                    }
+                """
+            }
+        }
 
-    //     then {
-    //         assert process.success
-    //         assertAll(
-    //             { assert snapshot(process.out).match() }
-    //         )
-    //     }
-    // }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
 
 }
