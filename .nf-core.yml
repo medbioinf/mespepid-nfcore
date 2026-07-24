@@ -3,17 +3,19 @@ lint:
     - conf/igenomes.config
     - conf/igenomes_ignored.config
     - assets/multiqc_config.yml
+    - .github/workflows/linting_comment.yml
   files_unchanged:
     - .github/CONTRIBUTING.md
     - assets/sendmail_template.txt
     - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/workflows/branch.yml
+    - .github/workflows/linting.yml
   multiqc_config: false
 nf_core_version: 4.0.2
 repository_type: pipeline
 template:
   author: Julian Uszkoreit
-  description: A pipeline for the identification of peptides in mass spectrometry
-    data.
+  description: A pipeline for the identification of peptides in mass spectrometry data.
   force: false
   is_nfcore: true
   name: mspepid
