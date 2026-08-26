@@ -3,8 +3,8 @@ process OKTOBERFEST_GENERATEFEATURES {
     label 'process_high'
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
-        'https://quay.io/medbioinf/oktoberfest:0.11-dev':
-        'quay.io/medbioinf/oktoberfest:0.11-dev' }"
+        'https://quay.io/medbioinf/oktoberfest:0.10.0-dev':
+        'quay.io/medbioinf/oktoberfest:0.10.0-dev' }"
 
     input:
     tuple val(meta), path(mzml), path(raw_spectra), path(psms_file)
@@ -32,14 +32,9 @@ process OKTOBERFEST_GENERATEFEATURES {
     irt_model = meta.oktoberfest_irt_model ?: "Prosit_2019_irt"
     // the intensity_model model provided by Koina
     intensity_model = meta.oktoberfest_intensity_model ?: "Prosit_2020_intensity_HCD"
+    // the used prediction server
+    prediction_server = meta.prediction_server ?: "koina.wilhelmlab.org:443"
     template 'oktoberfest_feature_gen.py'
-
-    // TODO: feature generation works, but:
-    // - percolator is called in a step somewhere?
-    // - features are not converted into pin yet
-    // - also remove the lda_score from pin directly
-    // - versions.yml not yet created
-    // - add a way to specifiy the koina server (there is now also https://koina.bi.denbi.de, or local)
 
     stub:
     """

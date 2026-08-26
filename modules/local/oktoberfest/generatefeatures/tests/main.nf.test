@@ -55,11 +55,8 @@ nextflow_process {
 
             process {
                 """
-                def spectrumPattern = '.*scan=(\\\\d+)\$'
-                def scanIdPattern = '^(?P<scan_id>\\\\d+)\$'
-
                 input[0] = COMET.out.mzid.map { meta, mzid ->
-                    [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: spectrumPattern, scan_id_pattern: scanIdPattern], mzid]
+                    [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid]
                 }
                 """
             }

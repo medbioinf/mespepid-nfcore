@@ -18,14 +18,13 @@ import platform
 from importlib.metadata import version
 
 import oktoberfest as ok
-from oktoberfest.runner import _ce_calib, _calculate_features
+from oktoberfest.runner import _preprocess, _ce_calib, _refinement_learn, _calculate_features
 from oktoberfest.utils import Config, JobPool, ProcessStep
 from oktoberfest import rescore as ok_re
 from oktoberfest import preprocessing as ok_pp
 import pandas as pd
 import psm_utils
 import psm_utils.io
-from spectrum_io.file import csv
 import tritonclient
 
 
@@ -102,68 +101,6 @@ def get_scan_id(spectrum_id: str, scan_id_regex: re.Pattern) -> int:
     return int(match.group("scan_id"))
 
 
-def preprocess_spectra(spectra_files: list[Path], config: Config) -> list[Path]:
-    """
-    Preprocess spectra files for feature generation.
-    This code is copied and adapted from the Oktoberfest's "runner.py" [_preprocess]
-    """
-
-    preprocess_search_step = ProcessStep(config.output, "preprocessing_search")
-    if not preprocess_search_step.is_done():
-        # load search results
-        logging.info(f"Converting search results from {config.search_results} to internal search result.")
-        msms_output = config.output / "msms"
-        msms_output.mkdir(exist_ok=True)
-        internal_search_file = msms_output / "msms.prosit"
-
-        # as we only have internal format, we skip the "conversion" and basically copy the file
-        search_results = pd.read_csv(config.search_results)
-        csv.write_file(search_results, internal_search_file)
-
-        if config.spectra_type.lower() in ["d", "hdf"]:
-            timstof_metadata = ok_pp.convert_timstof_metadata(
-                input_path=config.search_results,
-                search_engine=config.search_results_type,
-                output_file=msms_output / "tims_meta.csv",
-            )
-
-        # TODO add support for internal timstof metadata
-        logging.info(f"Read {len(search_results)} PSMs from {internal_search_file}")
-        model_type = config.models["intensity"]
-        try:
-            search_results = ok_pp.filter_peptides_for_model(peptides=search_results, model=model_type)
-        except ValueError:
-            logging.exception(
-                ValueError(
-                    f"Unknown model {model_type}. Please ensure it is one of ['prosit', 'ms2pip', 'alphapept']."
-                    "If you're using local prediction, please ensure the model type is contained in the model file name."
-                )
-            )
-
-        # split search results
-        searchfiles_found = ok_pp.split_search(
-            search_results=search_results,
-            output_dir=config.output / "msms",
-            filenames=[spectra_file.stem for spectra_file in spectra_files],
-        )
-        # split timstof metadata
-        if config.spectra_type.lower() in ["d", "hdf"]:
-            _ = ok_pp.split_timstof_metadata(
-                timstof_metadata=timstof_metadata,
-                output_dir=config.output / "msms",
-                filenames=searchfiles_found,
-            )
-        preprocess_search_step.mark_done()
-    else:
-        searchfiles_found = [msms_file.stem for msms_file in (config.output / "msms").glob("*rescore")]
-    spectra_files_to_return = []
-    for spectra_file in spectra_files:
-        if spectra_file.stem in searchfiles_found:
-            spectra_files_to_return.append(spectra_file)
-
-    return spectra_files_to_return
-
-
 def feature_generation(config_path: Union[str, Path]):
     """
     Parts of Oktoberfest's [run_rescore-function without the rescoring step](https://github.com/wilhelm-lab/oktoberfest/blob/ce8d909ebf64aaaf9c0eebcc2bb33b9c4492ae90/oktoberfest/runner.py#L1238-L1312)
@@ -185,7 +122,7 @@ def feature_generation(config_path: Union[str, Path]):
     proc_dir = config.output / "proc"
     proc_dir.mkdir(parents=True, exist_ok=True)
 
-    spectra_files = preprocess_spectra(spectra_files, config)
+    spectra_files = _preprocess(spectra_files, config)
 
     # TODO is this the most elegant way to multi-thread CE calibration before running refinement learning?
     # Should we store the returned libraries and pass them to _calculate_features and _refinement_learn instead of
@@ -199,8 +136,8 @@ def feature_generation(config_path: Union[str, Path]):
         for spectra_file in spectra_files:
             _ = _ce_calib(spectra_file, config)
 
-    # TODO: check whether `_refinement_learn` was ever used, what is it needed for?
-    #_refinement_learn(spectra_files, config)
+    if config.do_refinement_learning:
+        _refinement_learn(spectra_files, config)
 
     if config.num_threads > 1:
         processing_pool = JobPool(processes=config.num_threads)
@@ -370,9 +307,11 @@ def main():
     # misc
     config_dict["output"] = "${out_folder}"
     config_dict["numThreads"] = 1  # Set to 1 for debugging, can be increased later
+    config_dict["prediction_server"] = "${prediction_server}"
     # mass spec parameters
     config_dict["massTolerance"] = float("${mass_tolerance}")
     config_dict["unitMassTolerance"] = "${mass_tolerance_unit}"
+    config_dict["fragmentation_method"] = "CID"
     # predicition params
     config_dict["models"]["irt"] = "${irt_model}"
     config_dict["models"]["intensity"] = "${intensity_model}"

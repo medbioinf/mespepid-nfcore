@@ -52,7 +52,7 @@ workflow SPECTRA_IDENTIFICATION {
         ch_versions = ch_versions.mix(COMET.out.versions_comet)
         ch_identifications = ch_identifications.mix(
             COMET.out.mzid.map { meta, mzid ->
-                def spectrumPattern = meta.vendor.toString() == 'bruker'
+                def spectrumPattern = meta.vendor == 'bruker'
                     ? '.*index=(\\d+)$'
                     : '.*scan=(\\d+)$'
                 def scanIdPattern = '^(?P<scan_id>\\d+)$'
@@ -90,7 +90,15 @@ workflow SPECTRA_IDENTIFICATION {
         ch_versions = ch_versions.mix(SAGEBETA.out.versions_sagebeta)
         ch_identifications = ch_identifications.mix(
             SAGEBETA.out.tsv.map { meta, tsv ->
-                [meta + [searchengine: 'sage', idfile_type: 'sage_tsv', spectrum_id_pattern: '(.*)', scan_id_pattern: '.*scan=(?P<scan_id>\\d+)$'], tsv]
+                def spectrumPattern = meta.vendor == 'bruker'
+                    ? '(.*)'
+                    : '(.*)'
+
+                def scanIdPattern = meta.vendor == 'bruker'
+                    ? '.*index=(?P<scan_id>\\d+)$'
+                    : '.*scan=(?P<scan_id>\\d+)$'
+
+                [meta + [searchengine: 'sage', idfile_type: 'sage_tsv', spectrum_id_pattern: spectrumPattern, scan_id_pattern: scanIdPattern], tsv]
             }
         )
     }

@@ -1,4 +1,4 @@
-include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR ; PERCOLATOR as OKTOBERFEST_PERCOLATOR} from '../../../modules/nf-core/percolator/main'
+include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR ; PERCOLATOR as OKTOBERFEST_PERCOLATOR } from '../../../modules/nf-core/percolator/main'
 include { MS2RESCORE_GETMODEL } from '../../../modules/local/ms2rescore/getmodel/main'
 include { MS2RESCORE_RUNMS2RESCORE } from '../../../modules/local/ms2rescore/runms2rescore/main'
 include { OKTOBERFEST_GENERATEFEATURES } from '../../../modules/local/oktoberfest/generatefeatures/main'
@@ -46,7 +46,7 @@ workflow SPECTRA_RESCORING {
         // TODO: allow models per sample (and download multiple models if needed)
         if (!ms2rescore_model_dir) {
             MS2RESCORE_GETMODEL(ms2rescore_model)
-            ms2rescore_model_dir_val =  MS2RESCORE_GETMODEL.out.model_dir
+            ms2rescore_model_dir_val = MS2RESCORE_GETMODEL.out.model_dir
         }
         else {
             ms2rescore_model_dir_val = channel.value(file(ms2rescore_model_dir, checkIfExists: true))
@@ -54,8 +54,13 @@ workflow SPECTRA_RESCORING {
 
         // TODO: make the setting of the model and fragment_tolerance per sample, not hardcoded for all runs
         ch_ms2rescore_in = ch_rescoring_in.map { meta, mzml, raw_spectra, psmutils_tsv ->
-            [meta + [outdir: meta.searchengine + "/ms2rescore", ms2pip_model: ms2rescore_model, fragment_tol_da: fragment_tol_da], mzml, raw_spectra, psmutils_tsv]
+            [meta + [
+                outdir: meta.searchengine + "/ms2rescore",
+                ms2pip_model: ms2rescore_model,
+                fragment_tol_da: fragment_tol_da
+            ], mzml, raw_spectra == mzml ? [] : raw_spectra, psmutils_tsv]
         }
+
         MS2RESCORE_RUNMS2RESCORE(
             ch_ms2rescore_in,
             ms2rescore_model_dir_val,
@@ -78,11 +83,19 @@ workflow SPECTRA_RESCORING {
 
         // TODO: parameterize the oktoberfest models
         ch_oktoberfest_in = ch_rescoring_in.map { meta, mzml, raw_spectra, psmutils_tsv ->
-            [meta + [outdir: meta.searchengine + "/oktoberfest", oktoberfest_intensity_model: "Prosit_2020_intensity_HCD", oktoberfest_irt_model: "Prosit_2019_irt", fragment_tol_da: fragment_tol_da], mzml, raw_spectra, psmutils_tsv]
+            [meta + [
+                outdir: meta.searchengine + "/oktoberfest",
+                oktoberfest_intensity_model: "Prosit_2020_intensity_HCD",
+                oktoberfest_irt_model: "Prosit_2019_irt",
+                mass_tolerance: fragment_tol_da,
+                mass_tolerance_unit: "da",
+            ], mzml, raw_spectra == mzml ? [] : raw_spectra, psmutils_tsv]
         }
 
+        ch_oktoberfest_in.view()
+
         OKTOBERFEST_GENERATEFEATURES(
-            ch_oktoberfest_in,
+            ch_oktoberfest_in
         )
         ch_versions = ch_versions.mix(OKTOBERFEST_GENERATEFEATURES.out.versions)
 
@@ -95,7 +108,6 @@ workflow SPECTRA_RESCORING {
         ch_rescoring_out = ch_rescoring_out
             .mix(OKTOBERFEST_PERCOLATOR.out.target_psms.map { meta, file -> [meta + [status: 'oktoberfest_target'], file] })
             .mix(OKTOBERFEST_PERCOLATOR.out.decoy_psms.map { meta, file -> [meta + [status: 'oktoberfest_decoy'], file] })
-
     }
 
     emit:
