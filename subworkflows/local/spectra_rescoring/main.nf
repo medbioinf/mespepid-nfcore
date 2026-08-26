@@ -1,7 +1,7 @@
 include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR ; PERCOLATOR as OKTOBERFEST_PERCOLATOR } from '../../../modules/nf-core/percolator/main'
 include { MS2RESCORE_GETMODEL } from '../../../modules/local/ms2rescore/getmodel/main'
 include { MS2RESCORE_RUNMS2RESCORE } from '../../../modules/local/ms2rescore/runms2rescore/main'
-include { OKTOBERFEST_GENERATEFEATURES } from '../../../modules/local/oktoberfest/generatefeatures/main'
+include { OKTOBERFEST_RUNOKTOBERFEST } from '../../../modules/local/oktoberfest/runoktoberfest/main'
 
 workflow SPECTRA_RESCORING {
     take:
@@ -94,12 +94,12 @@ workflow SPECTRA_RESCORING {
 
         ch_oktoberfest_in.view()
 
-        OKTOBERFEST_GENERATEFEATURES(
+        OKTOBERFEST_RUNOKTOBERFEST(
             ch_oktoberfest_in
         )
-        ch_versions = ch_versions.mix(OKTOBERFEST_GENERATEFEATURES.out.versions)
+        ch_versions = ch_versions.mix(OKTOBERFEST_RUNOKTOBERFEST.out.versions)
 
-        ch_percolator_oktoberfest_in = OKTOBERFEST_GENERATEFEATURES.out.pin.map { meta, pin ->
+        ch_percolator_oktoberfest_in = OKTOBERFEST_RUNOKTOBERFEST.out.pin.map { meta, pin ->
             [meta + [status: 'oktoberfest', outdir: meta.searchengine + "/oktoberfest"], pin]
         }
         OKTOBERFEST_PERCOLATOR(

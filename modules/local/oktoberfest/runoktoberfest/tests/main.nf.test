@@ -1,14 +1,14 @@
 // nf-core modules test tdf2mzml
 nextflow_process {
 
-    name "Test Process OKTOBERFEST_GENERATEFEATURES"
+    name "Test Process OKTOBERFEST_RUNOKTOBERFEST"
     script "../main.nf"
-    process "OKTOBERFEST_GENERATEFEATURES"
+    process "OKTOBERFEST_RUNOKTOBERFEST"
 
     tag "modules"
     tag "modules_local"
     tag "oktoberfest"
-    tag "oktoberfest/generatefeatures"
+    tag "oktoberfest/runoktoberfest"
     tag "comet"
     tag "openms/decoydatabase"
     tag "psmutilsconversions"
@@ -63,7 +63,7 @@ nextflow_process {
         }
     }
 
-    test("oktoberfest generatefeatures - OVEMB150205_12") {
+    test("oktoberfest - OVEMB150205_12") {
         when {
             process {
                 """
@@ -109,7 +109,7 @@ nextflow_process {
         }
     }
 
-    test("oktoberfest generatefeatures - stub") {
+    test("oktoberfest - stub") {
 
         options "-stub"
 

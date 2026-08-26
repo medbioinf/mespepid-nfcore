@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
 # # TODO nf-core: Add a description of the module and list keywords
-name: "oktoberfest_generatefeatures"
+name: "oktoberfest_runoktoberfest"
 description: write your description here
 keywords:
   - sort

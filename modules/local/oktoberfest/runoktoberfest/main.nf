@@ -1,4 +1,4 @@
-process OKTOBERFEST_GENERATEFEATURES {
+process OKTOBERFEST_RUNOKTOBERFEST {
     tag "$meta.id"
     label 'process_high'
 
@@ -32,7 +32,7 @@ process OKTOBERFEST_GENERATEFEATURES {
     irt_model = meta.oktoberfest_irt_model ?: "Prosit_2019_irt"
     // the intensity_model model provided by Koina
     intensity_model = meta.oktoberfest_intensity_model ?: "Prosit_2020_intensity_HCD"
-    // the used prediction server
+    // the used prediction server (e.g. koina.wilhelmlab.org:443 or koina.bi.denbi.de:443)
     prediction_server = meta.prediction_server ?: "koina.wilhelmlab.org:443"
     template 'oktoberfest_feature_gen.py'
 
