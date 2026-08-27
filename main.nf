@@ -55,6 +55,8 @@ workflow NFCORE_MSPEPID {
         params.sage_prefilter,
         params.ms2rescore_model,
         params.ms2rescore_model_dir,
+        params.oktoberfest_intensity_model,
+        params.oktoberfest_irt_model,
     )
 }
 /*

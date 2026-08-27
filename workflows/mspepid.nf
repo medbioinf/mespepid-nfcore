@@ -37,6 +37,8 @@ workflow MSPEPID {
     sage_prefilter              // boolean: whether to run sage prefiltering
     ms2rescore_model            // string: which MS2Rescore model to use for rescoring
     ms2rescore_model_dir        // string: optional directory containing pre-downloaded MS2PIP models
+    oktoberfest_intensity_model // string: which Koina intensity model to use for Oktoberfest
+    oktoberfest_irt_model       // string: which Koina iRT model to use for Oktoberfest
 
     main:
 
@@ -113,6 +115,8 @@ workflow MSPEPID {
         run_oktoberfest,
         ms2rescore_model,
         ms2rescore_model_dir,
+        oktoberfest_intensity_model,
+        oktoberfest_irt_model,
     )
     ch_versions = ch_versions.mix(SPECTRA_RESCORING.out.versions)
 

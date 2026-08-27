@@ -9,11 +9,13 @@ workflow SPECTRA_RESCORING {
     searchengine_pins
     prepared_spectra
     fragment_tol_da
-    run_percolator          // boolean: whether to run Percolator for rescoring
-    run_ms2rescore          // boolean: whether to run MS2Rescore for rescoring
-    run_oktoberfest         // boolean: whether to run Oktoberfest for rescoring
-    ms2rescore_model        // string: which MS2Rescore model to use
-    ms2rescore_model_dir    // string: optional directory containing pre-downloaded MS2PIP models
+    run_percolator              // boolean: whether to run Percolator for rescoring
+    run_ms2rescore              // boolean: whether to run MS2Rescore for rescoring
+    run_oktoberfest             // boolean: whether to run Oktoberfest for rescoring
+    ms2rescore_model            // string: which MS2Rescore model to use
+    ms2rescore_model_dir        // string: optional directory containing pre-downloaded MS2PIP models
+    oktoberfest_intensity_model // string: which Koina intensity model to use for Oktoberfest
+    oktoberfest_irt_model       // string: which Koina iRT model to use for Oktoberfest
 
     main:
     ch_versions = channel.empty()
@@ -81,12 +83,11 @@ workflow SPECTRA_RESCORING {
     // run Oktoberfest, if enabled
     if (run_oktoberfest) {
 
-        // TODO: parameterize the oktoberfest models
         ch_oktoberfest_in = ch_rescoring_in.map { meta, mzml, raw_spectra, psmutils_tsv ->
             [meta + [
                 outdir: meta.searchengine + "/oktoberfest",
-                oktoberfest_intensity_model: "Prosit_2020_intensity_HCD",
-                oktoberfest_irt_model: "Prosit_2019_irt",
+                oktoberfest_intensity_model: oktoberfest_intensity_model,
+                oktoberfest_irt_model: oktoberfest_irt_model,
                 mass_tolerance: fragment_tol_da,
                 mass_tolerance_unit: "da",
             ], mzml, raw_spectra == mzml ? [] : raw_spectra, psmutils_tsv]

@@ -157,6 +157,16 @@
                     "format": "directory-path",
                     "description": "Optional directory with pre-downloaded MS2PIP model files. If set to null, the respective model is downloaded and saved in the results directory.",
                     "fa_icon": "fas fa-folder-open"
+                },
+                "oktoberfest_intensity_model": {
+                    "type": "string",
+                    "default": "Prosit_2020_intensity_HCD",
+                    "description": "The Koina intensity model to use for Oktoberfest. Models can be found here: https://koina.wilhelmlab.org/docs"
+                },
+                "oktoberfest_irt_model": {
+                    "type": "string",
+                    "default": "Prosit_2019_irt",
+                    "description": "The Koina retention time (iRT) model to use for Oktoberfest. Models can be found here: https://koina.wilhelmlab.org/docs"
                 }
             }
         },
