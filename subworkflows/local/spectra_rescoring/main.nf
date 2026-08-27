@@ -92,8 +92,6 @@ workflow SPECTRA_RESCORING {
             ], mzml, raw_spectra == mzml ? [] : raw_spectra, psmutils_tsv]
         }
 
-        ch_oktoberfest_in.view()
-
         OKTOBERFEST_RUNOKTOBERFEST(
             ch_oktoberfest_in
         )
