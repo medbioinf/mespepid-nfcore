@@ -32,7 +32,8 @@ process OKTOBERFEST_RUNOKTOBERFEST {
     // the intensity_model model provided by Koina
     intensity_model = meta.oktoberfest_intensity_model ?: "Prosit_2020_intensity_HCD"
     // the used prediction server (e.g. koina.wilhelmlab.org:443 or koina.bi.denbi.de:443)
-    prediction_server = meta.prediction_server ?: "koina.wilhelmlab.org:443"
+    // override via ext.prediction_server in conf/modules.config
+    prediction_server = task.ext.prediction_server ?: "koina.wilhelmlab.org:443"
     template 'oktoberfest_feature_gen.py'
 
     stub:
