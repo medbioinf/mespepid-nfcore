@@ -5,6 +5,24 @@
                 "COMET": {
                     "comet": "2026.01 rev. 1 (e4f767c)"
                 },
+                "MS2RESCORE_GETMODEL": {
+                    "ms2rescore": "3.2.1",
+                    "python": "3.11.14"
+                },
+                "MS2RESCORE_PERCOLATOR": {
+                    "percolator": "3.07.1"
+                },
+                "MS2RESCORE_RUNMS2RESCORE": {
+                    "python": "3.11.14",
+                    "ms2rescore": "3.2.1"
+                },
+                "OKTOBERFEST_PERCOLATOR": {
+                    "percolator": "3.07.1"
+                },
+                "OKTOBERFEST_RUNOKTOBERFEST": {
+                    "python": "3.11.16",
+                    "oktoberfest": "0.10.0"
+                },
                 "OPENMS_DECOYDATABASE": {
                     "openms": "3.5.0"
                 },
@@ -14,6 +32,12 @@
                 "PSMUTILSCONVERSIONS": {
                     "Python": "3.11.15",
                     "psm-utils": "pepxml-and-mzid-fixes"
+                },
+                "SAGEBETA": {
+                    "sage": "sage 0.15.0-beta.1"
+                },
+                "SAGECONFIG": {
+                    "Python": "3.14.3"
                 },
                 "THERMORAWFILEPARSER": {
                     "thermorawfileparser": "1.4.5"
@@ -32,24 +56,70 @@
                 "comet/2-OVEMB150205_14.mzid",
                 "comet/2-OVEMB150205_14.pin",
                 "comet/2-OVEMB150205_14.psm_utils.tsv",
+                "comet/ms2rescore",
+                "comet/ms2rescore/1-OVEMB150205_12.pin",
+                "comet/ms2rescore/1-OVEMB150205_12.psm.decoy.pout",
+                "comet/ms2rescore/1-OVEMB150205_12.psm.target.pout",
+                "comet/ms2rescore/2-OVEMB150205_14.pin",
+                "comet/ms2rescore/2-OVEMB150205_14.psm.decoy.pout",
+                "comet/ms2rescore/2-OVEMB150205_14.psm.target.pout",
+                "comet/oktoberfest",
+                "comet/oktoberfest/1-OVEMB150205_12.pin",
+                "comet/oktoberfest/1-OVEMB150205_12.psm.decoy.pout",
+                "comet/oktoberfest/1-OVEMB150205_12.psm.target.pout",
+                "comet/oktoberfest/2-OVEMB150205_14.pin",
+                "comet/oktoberfest/2-OVEMB150205_14.psm.decoy.pout",
+                "comet/oktoberfest/2-OVEMB150205_14.psm.target.pout",
                 "comet/percolator",
                 "comet/percolator/1-OVEMB150205_12.psm.decoy.pout",
                 "comet/percolator/1-OVEMB150205_12.psm.target.pout",
                 "comet/percolator/2-OVEMB150205_14.psm.decoy.pout",
                 "comet/percolator/2-OVEMB150205_14.psm.target.pout",
+                "ms2rescore",
+                "ms2rescore/ms2pip_model",
+                "ms2rescore/ms2pip_model/model_20210416_HCD2021_B.xgboost",
+                "ms2rescore/ms2pip_model/model_20210416_HCD2021_Y.xgboost",
+                "mzmls",
+                "mzmls/1-OVEMB150205_12.mzML",
+                "mzmls/2-OVEMB150205_14.mzML",
                 "openms",
                 "openms/yeast_UPS_decoy.fasta",
                 "pipeline_info",
                 "pipeline_info/nf_core_mspepid_software_versions.yml",
-                "thermorawfileparser",
-                "thermorawfileparser/1-OVEMB150205_12.mzML",
-                "thermorawfileparser/2-OVEMB150205_14.mzML"
+                "sage",
+                "sage/1-OVEMB150205_12.pin",
+                "sage/1-OVEMB150205_12.psm_utils.tsv",
+                "sage/1-OVEMB150205_12.results.json",
+                "sage/1-OVEMB150205_12.results.sage.tsv",
+                "sage/2-OVEMB150205_14.pin",
+                "sage/2-OVEMB150205_14.psm_utils.tsv",
+                "sage/2-OVEMB150205_14.results.json",
+                "sage/2-OVEMB150205_14.results.sage.tsv",
+                "sage/ms2rescore",
+                "sage/ms2rescore/1-OVEMB150205_12.pin",
+                "sage/ms2rescore/1-OVEMB150205_12.psm.decoy.pout",
+                "sage/ms2rescore/1-OVEMB150205_12.psm.target.pout",
+                "sage/ms2rescore/2-OVEMB150205_14.pin",
+                "sage/ms2rescore/2-OVEMB150205_14.psm.decoy.pout",
+                "sage/ms2rescore/2-OVEMB150205_14.psm.target.pout",
+                "sage/oktoberfest",
+                "sage/oktoberfest/1-OVEMB150205_12.pin",
+                "sage/oktoberfest/1-OVEMB150205_12.psm.decoy.pout",
+                "sage/oktoberfest/1-OVEMB150205_12.psm.target.pout",
+                "sage/oktoberfest/2-OVEMB150205_14.pin",
+                "sage/oktoberfest/2-OVEMB150205_14.psm.decoy.pout",
+                "sage/oktoberfest/2-OVEMB150205_14.psm.target.pout",
+                "sage/percolator",
+                "sage/percolator/1-OVEMB150205_12.psm.decoy.pout",
+                "sage/percolator/1-OVEMB150205_12.psm.target.pout",
+                "sage/percolator/2-OVEMB150205_14.psm.decoy.pout",
+                "sage/percolator/2-OVEMB150205_14.psm.target.pout"
             ]
         ],
-        "timestamp": "2026-04-30T12:57:40.447997351",
+        "timestamp": "2026-08-27T15:39:40.737955275",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nextflow": "26.04.6"
         }
     }
 }
