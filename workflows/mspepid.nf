@@ -66,11 +66,27 @@ workflow MSPEPID {
             db_meta.sample_ids.collect { run_id -> [run_id, db_fasta] }
         }
 
+    // ADJUSTMZML (native-ID fix for Bruker mzML) is only needed by Oktoberfest today.
+    // Extend this OR-condition when MSAmanda support is added.
+    def needs_native_id_fix = run_oktoberfest
+
+    // TODO: no search engine needs decompressed mzML yet. Once X!Tandem (or another
+    // such tool) is added, wire its run_xtandem-style flag in here, e.g.
+    // `def needs_uncompression = run_xtandem`.
+    def needs_uncompression = false
+
     // prepare the spectra files (strip the fasta_file before passing to PREPARE_SPECTRA)
     PREPARE_SPECTRA(
-        ch_samplesheet.map { meta, spectrum_file, _fasta_file -> [meta, spectrum_file] }
+        ch_samplesheet.map { meta, spectrum_file, _fasta_file -> [meta, spectrum_file] },
+        needs_native_id_fix,
+        needs_uncompression,
     )
-    ch_prepared_spectra = PREPARE_SPECTRA.out.mzmls.join(PREPARE_SPECTRA.out.uncompressed, by: 0)
+
+    // join by meta.id, not the whole meta map, and get back all meta data after join
+    ch_prepared_spectra = PREPARE_SPECTRA.out.mzmls
+        .map { meta, mzml -> [meta.id, meta, mzml] }
+        .join(PREPARE_SPECTRA.out.uncompressed.map { meta, raw -> [meta.id, raw] }, by: 0)
+        .map { _id, meta, mzml, raw -> [meta, mzml, raw] }
 
     // spectra identification
     SPECTRA_IDENTIFICATION(

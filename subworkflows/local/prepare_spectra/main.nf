@@ -1,3 +1,4 @@
+include { ADJUSTMZML } from '../../../modules/local/adjustmzml/main'
 include { GUNZIP } from '../../../modules/nf-core/gunzip/main'
 include { TDF2MZML } from '../../../modules/local/tdf2mzml/main'
 include { THERMORAWFILEPARSER } from '../../../modules/nf-core/thermorawfileparser/main'
@@ -6,7 +7,11 @@ include { UNZIP } from '../../../modules/nf-core/unzip/main'
 
 workflow PREPARE_SPECTRA {
     take:
-    ch_spectra // channel: [ val(meta), [ .d-folder | .raw | .mzml ] ]
+    ch_spectra           // channel: [ val(meta), [ .d-folder | .raw | .mzml ] ]
+    needs_native_id_fix  // boolean: whether to append "scan="" native IDs to mzML (not by default
+                         // in Bruker data, but needed by some tools like Oktoberfst and MS Amanda)
+    needs_uncompression  // boolean: whether to decompress mzML's binary data arrays (needed by
+                         // some search engines, e.g. X!Tandem)
 
     main:
 
@@ -125,6 +130,25 @@ workflow PREPARE_SPECTRA {
     THERMORAWFILEPARSER(ch_branched_uncompressed_spectra.thermoraw)
     ch_versions = ch_versions.mix(THERMORAWFILEPARSER.out.versions_thermorawfileparser)
     ch_mzmls = ch_mzmls.mix(THERMORAWFILEPARSER.out.spectra)
+
+    // adjust some mzML internals if necessary
+    if (needs_native_id_fix || needs_uncompression) {
+        // only Bruker files need the native ID fix; but if uncompression is requested,
+        // every file needs reprocessing regardless of vendor
+        ch_mzmls
+            .branch { meta, _mzml ->
+                needs_adjust: needs_uncompression || (meta.vendor == VENDOR_BRUKER && needs_native_id_fix)
+                as_is: true
+            }
+            .set { ch_branched_mzmls }
+
+        ADJUSTMZML(ch_branched_mzmls.needs_adjust.map { meta, mzml -> [meta + [
+            needs_native_id_fix: (meta.vendor == VENDOR_BRUKER && needs_native_id_fix),
+            uncompress: needs_uncompression], mzml] })
+        ch_versions = ch_versions.mix(ADJUSTMZML.out.versions_adjustmzml)
+
+        ch_mzmls = ch_branched_mzmls.as_is.mix(ADJUSTMZML.out.mzml)
+    }
 
     emit:
     versions = ch_versions
