@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "publishmzml"
+description: Pure pass-through (no tool, no computation) used only to give the final,
+  prepared mzML from PREPARE_SPECTRA a single, dedicated publishDir - independent of
+  which upstream process (TDF2MZML, THERMORAWFILEPARSER, ADJUSTMZML) produced it.
+keywords:
+  - proteomics
+  - mzml
+  - publish
+tools:
+  - "publishmzml":
+      description: "Not an external tool - a no-op Nextflow process that re-emits its
+        input file unchanged, purely to attach a publishDir to the final mzML."
+      homepage: ""
+      documentation: ""
+      tool_dev_url: ""
+      doi: "no DOI available"
+      licence: []
+      identifier: null
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - mzml:
+        type: file
+        description: The final, prepared mzML file for this sample
+        pattern: "*.{mzml,mzML}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3244"
+
+output:
+  mzml:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.{mzml,mzML}":
+          type: file
+          description: The same mzML file, unchanged, published to outdir/mzmls
+          pattern: "*.{mzml,mzML}"
+          ontologies:
+            - edam: "http://edamontology.org/format_3244"
+
+authors:
+  - "@julianu"
+maintainers:
+  - "@julianu"

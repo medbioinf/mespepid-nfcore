@@ -1,5 +1,6 @@
 include { ADJUSTMZML } from '../../../modules/local/adjustmzml/main'
 include { GUNZIP } from '../../../modules/nf-core/gunzip/main'
+include { PUBLISHMZML } from '../../../modules/local/publishmzml/main'
 include { TDF2MZML } from '../../../modules/local/tdf2mzml/main'
 include { THERMORAWFILEPARSER } from '../../../modules/nf-core/thermorawfileparser/main'
 include { UNTAR } from '../../../modules/nf-core/untar/main'
@@ -149,6 +150,10 @@ workflow PREPARE_SPECTRA {
 
         ch_mzmls = ch_branched_mzmls.as_is.mix(ADJUSTMZML.out.mzml)
     }
+
+    // publish only the final, prepared mzML - not each intermediate conversion step
+    PUBLISHMZML(ch_mzmls)
+    ch_mzmls = PUBLISHMZML.out.mzml
 
     emit:
     versions = ch_versions
