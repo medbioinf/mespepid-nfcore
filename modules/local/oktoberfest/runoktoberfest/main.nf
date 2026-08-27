@@ -1,6 +1,5 @@
 process OKTOBERFEST_RUNOKTOBERFEST {
     tag "$meta.id"
-    label 'process_high'
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
         'https://quay.io/medbioinf/oktoberfest:0.10.0-dev':
