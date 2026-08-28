@@ -120,7 +120,7 @@ PSMs from each search engine are rescored independently. Output directories are 
 
 [MS2Rescore](https://ms2rescore.readthedocs.io/) generates additional rescoring features by comparing observed fragment ion spectra to spectra predicted by [MS2PIP](https://ms2pip.readthedocs.io/). The augmented feature set is then passed to Percolator for final scoring. This typically improves PSM identifications at a given FDR threshold, particularly for challenging samples such as immunopeptidomes or non-tryptic digests. I TIMS data is used as input, automatically Tims2Rescore is applied (which is the default behaviour of newer MS2Rescore implementations).
 
-The MS2PIP fragmentation model is controlled by `--ms2rescore_model` (default: `HCD`).
+The MS2PIP fragmentation model is controlled by `--ms2rescore_model` (default: `HCD`). The used model can be saved by setting `--save_ms2rescore_model` to `true`, a prior downloaded model can be used by pointing `--ms2rescore_model_dir` to an appropriate path.
 
 ### Oktoberfest
 

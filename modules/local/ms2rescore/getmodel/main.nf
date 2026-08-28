@@ -2,8 +2,6 @@ process MS2RESCORE_GETMODEL {
     tag "${ms2pip_model}"
     label 'process_single'
 
-    publishDir path: { "${params.outdir}/ms2rescore" }, mode: params.publish_dir_mode
-
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
         ? 'https://depot.galaxyproject.org/singularity/ms2rescore:3.2.1--pyhdfd78af_0'

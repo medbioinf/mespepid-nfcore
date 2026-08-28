@@ -158,6 +158,11 @@
                     "description": "Optional directory with pre-downloaded MS2PIP model files. If set to null, the respective model is downloaded and saved in the results directory.",
                     "fa_icon": "fas fa-folder-open"
                 },
+                "save_ms2rescore_model": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Publish the downloaded/validated MS2Rescore (MS2PIP) model files to the output directory."
+                },
                 "oktoberfest_intensity_model": {
                     "type": "string",
                     "default": "Prosit_2020_intensity_HCD",
