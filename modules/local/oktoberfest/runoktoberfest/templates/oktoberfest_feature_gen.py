@@ -336,10 +336,14 @@ def main():
         try:
             feature_generation(config_path)
             is_successfull = True
+            break
         except tritonclient.utils.InferenceServerException as e:
             if str(e.status) == "504":
                 logging.error("Koina server not available, retrying in 10 seconds...")
                 sleep(10)
+            else:
+                logging.error("Oktoberfest job failed with an unexpected error: %s", e)
+                raise
 
     if not is_successfull:
         logging.error("Oktoberfest job failed after multiple retries.")
