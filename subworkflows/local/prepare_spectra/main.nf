@@ -65,12 +65,16 @@ workflow PREPARE_SPECTRA {
 
     ch_versions = channel.empty()
 
+    // sorted longest-first known file extensions
+    def KNOWN_EXTENSIONS_LONGEST_FIRST = (EXTENSION_TO_VENDOR_MAP.keySet() as List).sort { -it.length() }
+
     // add the vendor information to the metadata based on the file extension, if the extension is unknown assign VENDOR_UNKNOWN
     ch_spectra = ch_spectra.map { meta, path ->
-        def path_split = path.name.toLowerCase().tokenize('.')
-        def full_extension = "." + path_split[1..-1].join('.')
-        meta.vendor = EXTENSION_TO_VENDOR_MAP[full_extension] ? EXTENSION_TO_VENDOR_MAP[full_extension] : VENDOR_UNKNOWN
-        meta.compression = EXTENSION_TO_COMPRESSION_MAP[full_extension] ? EXTENSION_TO_COMPRESSION_MAP[full_extension] : COMPRESSION_UNSUPPORTED
+        def filename = path.name.toLowerCase()
+        // match against the known extensions allowing multiple dots in the base name
+        def full_extension = KNOWN_EXTENSIONS_LONGEST_FIRST.find { filename.endsWith(it) }
+        meta.vendor = full_extension ? EXTENSION_TO_VENDOR_MAP[full_extension] : VENDOR_UNKNOWN
+        meta.compression = full_extension ? EXTENSION_TO_COMPRESSION_MAP[full_extension] : COMPRESSION_UNSUPPORTED
         return [meta, path]
     }
 
