@@ -1,76 +1,78 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
-# # TODO nf-core: Add a description of the module and list keywords
 name: "oktoberfest_runoktoberfest"
-description: write your description here
+description: Runs Oktoberfest peptide property prediction (retention time and
+  fragment intensity, via Koina) against a set of PSMs and their spectra, and
+  converts the resulting features directly into a Percolator PIN file.
 keywords:
-  - sort
-  - example
-  - genomics
+  - proteomics
+  - rescoring
+  - spectrum prediction
+  - koina
 tools:
-  ## TODO nf-core: Add a description and other details for the software below
   - "oktoberfest":
-      description: ""
-      homepage: ""
-      documentation: ""
-      tool_dev_url: ""
-      doi: ""
-      licence: null
+      description: "Public proteomics tool to interface state-of-the-art
+        peptide property predictors, e.g. for detectability, intensity, or
+        retention time, for rescoring, library generation and DIA data
+        analysis."
+      homepage: "https://github.com/wilhelm-lab/oktoberfest"
+      documentation: "https://oktoberfest.readthedocs.io"
+      tool_dev_url: "https://github.com/wilhelm-lab/oktoberfest"
+      doi: "10.1002/pmic.202300112"
+      licence: ["MIT"]
       identifier: biotools:oktoberfest
 
 input:
-  ### TODO nf-core: Add a description of all of the variables used as input
   - - meta:
         type: map
         description: |
-          Groovy Map containing sample information
-          e.g. `[ id:'sample1' ]`
-    - bam:
+          Groovy Map containing sample information. In addition to `id`, this
+          module reads several optional keys with sensible defaults:
+          e.g. `[ id:'sample1', mass_tolerance:0.02, mass_tolerance_unit:'da',
+          oktoberfest_irt_model:'Prosit_2019_irt',
+          oktoberfest_intensity_model:'Prosit_2020_intensity_HCD',
+          scan_id_pattern:'^(?P<scan_id>\d+)$', out_folder:'./oktoberfest_out' ]`
+          The Koina prediction server is set separately via
+          `task.ext.prediction_server` in conf/modules.config.
+    - mzml:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
+        description: Spectrum file in mzML format. Used if present; falls
+          back to raw_spectra otherwise.
+        pattern: "*.{mzml,mzML}"
         ontologies:
-          - edam: "http://edamontology.org/format_2572" # BAM
-          - edam: "http://edamontology.org/format_2573" # CRAM
-          - edam: "http://edamontology.org/format_3462" # SAM
+          - edam: "http://edamontology.org/format_3244"
+    - raw_spectra:
+        type: file
+        description: Spectrum file in its original format (e.g. Thermo RAW
+          file, Bruker .d folder), used only if mzml is not provided
+        pattern: "*.{raw,RAW,d,D}"
+        ontologies: []
+    - psms_file:
+        type: file
+        description: PSMs in tab-separated format from psm-utils
+        pattern: "*.tsv"
+        ontologies: []
 
 output:
-  ### TODO nf-core: Add a description of all of the variables used as output
-  bam:
+  pin:
     - - meta:
           type: map
           description: |
             Groovy Map containing sample information
             e.g. `[ id:'sample1' ]`
-      - "*.bam":
+      - "*.pin":
           type: file
-          description: Sorted BAM/CRAM/SAM file
-          pattern: "*.{bam,cram,sam}"
-          ontologies:
-            - edam: "http://edamontology.org/format_2572" # BAM
-            - edam: "http://edamontology.org/format_2573" # CRAM
-            - edam: "http://edamontology.org/format_3462" # SAM
-  versions_oktoberfest:
-    - - "${task.process}":
-          type: string
-          description: The name of the process
-      - "oktoberfest":
-          type: string
-          description: The name of the tool
-      - "oktoberfest --version":
-          type: eval
-          description: The expression to obtain the version of the tool
-
-topics:
+          description: PSMs with Oktoberfest-predicted features, in
+            Percolator PIN format
+          pattern: "*.pin"
+          ontologies: []
   versions:
-    - - ${task.process}:
-          type: string
-          description: The name of the process
-      - oktoberfest:
-          type: string
-          description: The name of the tool
-      - oktoberfest --version:
-          type: eval
-          description: The expression to obtain the version of the tool
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: http://edamontology.org/format_3750 # YAML
+
 authors:
   - "@julianu"
 maintainers:
