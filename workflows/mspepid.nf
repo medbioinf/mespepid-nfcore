@@ -62,6 +62,8 @@ workflow MSPEPID {
         entrapment_fold,
         skip_decoy_generation,
     )
+    ch_versions = ch_versions.mix(PREPARE_DATABASES.out.versions)
+
     // create one [sample_id, db_fasta] for each sample_id in the original samplesheet
     ch_fasta_db_per_run = PREPARE_DATABASES.out.fasta
         .flatMap { db_meta, db_fasta ->
@@ -83,6 +85,7 @@ workflow MSPEPID {
         needs_native_id_fix,
         needs_uncompression,
     )
+    ch_versions = ch_versions.mix(PREPARE_SPECTRA.out.versions)
 
     // join by meta.id, not the whole meta map, and get back all meta data after join
     ch_prepared_spectra = PREPARE_SPECTRA.out.mzmls
@@ -103,6 +106,7 @@ workflow MSPEPID {
         sage_prefilter_chunk_size,
         sage_prefilter,
     )
+    ch_versions = ch_versions.mix(SPECTRA_IDENTIFICATION.out.versions)
 
     // spectra rescoring
     SPECTRA_RESCORING(

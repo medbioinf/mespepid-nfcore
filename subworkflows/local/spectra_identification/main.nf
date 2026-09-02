@@ -49,7 +49,7 @@ workflow SPECTRA_IDENTIFICATION {
         COMET(
             ch_comet_in
         )
-        ch_versions = ch_versions.mix(COMET.out.versions_comet)
+        // versions are topic-style, already collected globally - do not mix into ch_versions
         ch_identifications = ch_identifications.mix(
             COMET.out.mzid.map { meta, mzid ->
                 def spectrumPattern = meta.vendor == 'bruker'
@@ -73,7 +73,7 @@ workflow SPECTRA_IDENTIFICATION {
             precursor_tol_ppm,
             fragment_tol_da,
         )
-        ch_versions = ch_versions.mix(SAGECONFIG.out.versions_python)
+        // versions are topic-style, already collected globally - do not mix into ch_versions
 
         ch_sage_config = SAGECONFIG.out.config.map { config -> [['ID': 'SAGE_CONFIG'], config] }.first()
 
@@ -89,7 +89,7 @@ workflow SPECTRA_IDENTIFICATION {
             ch_sage_joined.fasta,
             ch_sage_config,
         )
-        ch_versions = ch_versions.mix(SAGEBETA.out.versions_sagebeta)
+        // versions are topic-style, already collected globally - do not mix into ch_versions
         ch_identifications = ch_identifications.mix(
             SAGEBETA.out.tsv.map { meta, tsv ->
                 def spectrumPattern = meta.vendor == 'bruker'
@@ -109,8 +109,7 @@ workflow SPECTRA_IDENTIFICATION {
     PSMUTILSCONVERSIONS(
         ch_identifications
     )
-    ch_versions = ch_versions.mix(PSMUTILSCONVERSIONS.out.versions_psm_utils)
-    ch_versions = ch_versions.mix(PSMUTILSCONVERSIONS.out.versions_python)
+    // versions are topic-style, already collected globally - do not mix into ch_versions
 
     ch_psmutils_tsvs = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, file -> [meta + [status: 'psmutils'], file] }
     ch_searchengine_pins = PSMUTILSCONVERSIONS.out.pin.map { meta, file -> [meta + [status: 'pin'], file] }

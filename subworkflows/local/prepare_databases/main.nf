@@ -20,7 +20,7 @@ workflow PREPARE_DATABASES {
             ch_fasta,
             entrapment_fold,
         )
-        ch_versions = ch_versions.mix(FDRBENCH.out.versions_fdrbench).mix(FDRBENCH.out.versions_java)
+        // versions are topic-style, already collected globally - do not mix into ch_versions
         ch_fasta = FDRBENCH.out.entrapment_fasta
     }
 
@@ -28,7 +28,7 @@ workflow PREPARE_DATABASES {
         OPENMS_DECOYDATABASE(
             ch_fasta
         )
-        ch_versions = ch_versions.mix(OPENMS_DECOYDATABASE.out.versions_openms)
+        // versions are topic-style, already collected globally - do not mix into ch_versions
         ch_fasta = OPENMS_DECOYDATABASE.out.decoy_fasta
     }
 
