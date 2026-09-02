@@ -18,14 +18,32 @@ import platform
 from importlib.metadata import version
 
 import oktoberfest as ok
-from oktoberfest.runner import _preprocess, _ce_calib, _refinement_learn, _calculate_features
+from oktoberfest.runner import _ce_calib, _calculate_features
 from oktoberfest.utils import Config, JobPool, ProcessStep
 from oktoberfest import rescore as ok_re
 from oktoberfest import preprocessing as ok_pp
+from koinapy import Koina
 import pandas as pd
 import psm_utils
 import psm_utils.io
 import tritonclient
+
+
+def _check_koina_model_availability(self):
+    """
+    Check the intensity model against the *configured* Koina server.
+
+    Oktoberfest's own `Config._check_koina_model_availability` instantiates
+    `Koina(model_name=...)` without `server_url`/`ssl`, so it always probes koinapy's
+    hardcoded default server and ignores `prediction_server` from the config (koinapy
+    offers no env-var override either). This patch mirrors what
+    `oktoberfest.predict.predictor` already does correctly, so the check validates the
+    server we actually use.
+    """
+    _ = Koina(model_name=self.models["intensity"], server_url=self.prediction_server, ssl=self.ssl)
+
+
+Config._check_koina_model_availability = _check_koina_model_availability
 
 
 COLS_TO_REMOVE = [
@@ -101,6 +119,69 @@ def get_scan_id(spectrum_id: str, scan_id_regex: re.Pattern) -> int:
     return int(match.group("scan_id"))
 
 
+def preprocess_spectra(spectra_files: list[Path], config: Config) -> list[Path]:
+    """
+    Replacement for Oktoberfest's `runner._preprocess` that keeps internal-format support.
+
+    Since 0.11, `_preprocess` unconditionally calls `pp.convert_search()`, which only
+    accepts real search engines and raises `ValueError: Unknown search engine provided:
+    internal`. We feed a psm-utils-derived CSV that is already in Oktoberfest's internal
+    format, so we read it with `pp.load_search()` instead - the same call 0.10 used in its
+    (now removed) `search_results_type == "internal"` branch, and still shipped unchanged
+    in 0.11. Everything else mirrors upstream `_preprocess`.
+
+    Do not "simplify" this back to `_preprocess` unless upstream restores internal-format
+    support - see https://github.com/wilhelm-lab/oktoberfest (regression is undocumented,
+    `Config.search_results_type` still advertises "Internal").
+
+    Arguments
+    ---------
+    spectra_files : list[Path]
+        The spectra files to preprocess.
+    config : Config
+        The Oktoberfest configuration.
+
+    Returns
+    -------
+    list[Path]
+        The subset of spectra files for which split search results were written.
+    """
+    if config.spectra_type.lower() in ["d", "hdf"]:
+        # upstream only builds timstof metadata on the convert_search path, so the
+        # internal format cannot supply it - fail loudly instead of erroring obscurely
+        # later on an undefined timstof_metadata.
+        raise ValueError(
+            f"spectra_type '{config.spectra_type}' is not supported together with internal "
+            "search results. Convert the spectra to mzML first."
+        )
+
+    preprocess_search_step = ProcessStep(config.output, "preprocessing_search")
+    if not preprocess_search_step.is_done():
+        # the search results are already in internal format, so they only need reading,
+        # no conversion (this is what upstream's dropped "internal" branch did)
+        logging.info(f"Reading internal-format search results from {config.search_results}.")
+        search_results = ok_pp.load_search(config.search_results)
+        logging.info(f"Read {len(search_results)} PSMs from {config.search_results}")
+
+        # filter for the peptides supported by the chosen intensity model. Unlike
+        # upstream, an unknown model is fatal here rather than silently continuing with
+        # unfiltered PSMs.
+        model_type = config.models["intensity"]
+        search_results = ok_pp.filter_peptides_for_model(peptides=search_results, model=model_type)
+
+        # split search results per spectra file
+        searchfiles_found = ok_pp.split_search(
+            search_results=search_results,
+            output_dir=config.output / "msms",
+            filenames=[spectra_file.stem for spectra_file in spectra_files],
+        )
+        preprocess_search_step.mark_done()
+    else:
+        searchfiles_found = [msms_file.stem for msms_file in (config.output / "msms").glob("*rescore")]
+
+    return [spectra_file for spectra_file in spectra_files if spectra_file.stem in searchfiles_found]
+
+
 def feature_generation(config_path: Union[str, Path]):
     """
     Parts of Oktoberfest's [run_rescore-function without the rescoring step](https://github.com/wilhelm-lab/oktoberfest/blob/ce8d909ebf64aaaf9c0eebcc2bb33b9c4492ae90/oktoberfest/runner.py#L1238-L1312)
@@ -122,10 +203,10 @@ def feature_generation(config_path: Union[str, Path]):
     proc_dir = config.output / "proc"
     proc_dir.mkdir(parents=True, exist_ok=True)
 
-    spectra_files = _preprocess(spectra_files, config)
+    spectra_files = preprocess_spectra(spectra_files, config)
 
-    # TODO is this the most elegant way to multi-thread CE calibration before running refinement learning?
-    # Should we store the returned libraries and pass them to _calculate_features and _refinement_learn instead of
+    # TODO is this the most elegant way to multi-thread CE calibration?
+    # Should we store the returned libraries and pass them to _calculate_features instead of
     # _ce_calib returning cached outputs?
     if config.num_threads > 1:
         processing_pool = JobPool(processes=config.num_threads)
@@ -136,8 +217,8 @@ def feature_generation(config_path: Union[str, Path]):
         for spectra_file in spectra_files:
             _ = _ce_calib(spectra_file, config)
 
-    if config.do_refinement_learning:
-        _refinement_learn(spectra_files, config)
+    # NOTE: refinement learning was removed upstream in 0.11 (_refinement_learn and
+    # Config.do_refinement_learning no longer exist); it was a no-op here anyway.
 
     if config.num_threads > 1:
         processing_pool = JobPool(processes=config.num_threads)

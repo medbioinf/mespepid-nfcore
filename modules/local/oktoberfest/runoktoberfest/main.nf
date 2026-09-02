@@ -2,8 +2,8 @@ process OKTOBERFEST_RUNOKTOBERFEST {
     tag "$meta.id"
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
-        'https://quay.io/medbioinf/oktoberfest:0.10.0-dev-3e4c593':
-        'quay.io/medbioinf/oktoberfest:0.10.0-dev-3e4c593' }"
+        'https://quay.io/medbioinf/oktoberfest:0.11.1-dev-90a95c7':
+        'quay.io/medbioinf/oktoberfest:0.11.1-dev-90a95c7' }"
 
     input:
     tuple val(meta), path(mzml), path(raw_spectra), path(psms_file)
