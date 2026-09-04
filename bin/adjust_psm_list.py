@@ -23,6 +23,16 @@ def argparse_setup():
 
     return parser.parse_args()
 
+def neg_log(value, context):
+    """
+    Computes -ln(value), which is used for several scores. Raises a clear error
+    identifying the offending PSM if value is not a valid e-/p-value style
+    score, i.e. not strictly positive.
+    """
+    if value <= 0:
+        raise ValueError(f"Cannot compute -ln({value!r}) for {context}: expected an e-value/p-value style score > 0.")
+    return -math.log(value)
+
 if __name__ == "__main__":
     args = argparse_setup()
 
@@ -51,7 +61,7 @@ if __name__ == "__main__":
     if(args.searchengine == "comet"):
         for psm in psm_list:
             # the score is usually "spec e-value", so use its -ln(score)
-            psm["metadata"]["Comet:expectation value"] = -math.log(float(psm["metadata"]["Comet:expectation value"]))
+            psm["metadata"]["Comet:expectation value"] = neg_log(float(psm["metadata"]["Comet:expectation value"]), f"spectrum_id={psm['spectrum_id']} (Comet:expectation value)")
     if (args.searchengine == "maxquant"):
         # we need to increase the spectrum_id by 1 and set "correct" empty proteins (for decoys)
         for psm in psm_list:
@@ -61,12 +71,12 @@ if __name__ == "__main__":
     elif (args.searchengine == "msgfplus"):
         for psm in psm_list:
             # these scores are usually "spec e-value", so use their -ln(score)
-            psm["score"] = -math.log(psm["score"])  # the MS-GF:SpecEValue
-            psm["metadata"]["MS-GF:EValue"] = -math.log(float(psm["metadata"]["MS-GF:EValue"]))
+            psm["score"] = neg_log(psm["score"], f"spectrum_id={psm['spectrum_id']} (MS-GF:SpecEValue)")
+            psm["metadata"]["MS-GF:EValue"] = neg_log(float(psm["metadata"]["MS-GF:EValue"]), f"spectrum_id={psm['spectrum_id']} (MS-GF:EValue)")
     elif (args.searchengine == "msfragger"):
         for psm in psm_list:
             # the score is an "expect value", so use its -ln(score)
-            psm["score"] = -math.log(float(psm["metadata"]["search_score_expect"]))    # use the search_score_expect here
+            psm["score"] = neg_log(float(psm["metadata"]["search_score_expect"]), f"spectrum_id={psm['spectrum_id']} (search_score_expect)")    # use the search_score_expect here
             del psm["metadata"]["search_score_expect"]                          # ... and remove it from the metadata
 
     write_file(psm_list, args.out_file, filetype="tsv")

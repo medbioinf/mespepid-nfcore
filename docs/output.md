@@ -11,7 +11,7 @@ nf-core/mspepid processes mass spectrometry data through the following steps:
 1. **Database preparation** - optional entrapment database creation and decoy sequence generation
 2. **Spectra preparation** - decompression and vendor-format conversion to mzML
 3. **Spectra identification** - database search with Comet and/or Sage
-4. **Rescoring** - FDR-based PSM rescoring with Percolator and/or MS2Rescore
+4. **Rescoring** - FDR-based PSM rescoring with Percolator, MS2Rescore, and/or Oktoberfest
 
 ---
 
@@ -26,6 +26,29 @@ Decoy protein sequences are automatically appended to the target database unless
 When `--entrapment_fold` is greater than 0, an entrapment database is created by [FDRBench](https://github.com/percolator/fdrBench) prior to decoy generation. Entrapment sequences (shuffled target proteins) are used for independent FDR estimation during benchmarking.
 
 ---
+
+## Spectra preparation
+
+Input spectra are decompressed if necessary and converted to mzML (Bruker `.d` via
+[tdf2mzml](https://github.com/mafreitas/tdf2mzml), Thermo `.raw` via
+[ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)); pre-supplied
+`.mzML` files are used as-is. Only the final, prepared mzML per sample is published -
+intermediate conversion outputs are not.
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `mzmls/`
+  - `*.mzML` - the prepared mzML used as input for spectra identification and rescoring
+
+</details>
+
+When required by any downstream tools, Bruker-converted mzML additionally gets a
+`scan=` native ID appended alongside its native `index=` ID (which tdf2mzml-converted
+mzML does not natively provide). This requires re-serializing through
+[msconvert](https://proteowizard.sourceforge.io/tools/msconvert.html), which additionally
+allows removal of the spectrum compression for tools nedding this. This adjustment
+step is skipped entirely when nothing requires it.
 
 ## Spectra identification
 
@@ -97,7 +120,34 @@ PSMs from each search engine are rescored independently. Output directories are 
 
 [MS2Rescore](https://ms2rescore.readthedocs.io/) generates additional rescoring features by comparing observed fragment ion spectra to spectra predicted by [MS2PIP](https://ms2pip.readthedocs.io/). The augmented feature set is then passed to Percolator for final scoring. This typically improves PSM identifications at a given FDR threshold, particularly for challenging samples such as immunopeptidomes or non-tryptic digests. I TIMS data is used as input, automatically Tims2Rescore is applied (which is the default behaviour of newer MS2Rescore implementations).
 
-The MS2PIP fragmentation model is controlled by `--ms2rescore_model` (default: `HCD`).
+The MS2PIP fragmentation model is controlled by `--ms2rescore_model` (default: `HCD`). The used model can be saved by setting `--save_ms2rescore_model` to `true`, a prior downloaded model can be used by pointing `--ms2rescore_model_dir` to an appropriate path.
+
+### Oktoberfest
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<searchengine>/oktoberfest/`
+  - `*.target.psms` - Target PSMs rescored after Oktoberfest feature augmentation.
+  - `*.decoy.psms` - Decoy PSMs.
+  - `*.pin` - The original PSMs with additional features predicted by Oktoberfest, converted to Percolator PIN format.
+
+</details>
+
+[Oktoberfest](https://oktoberfest.readthedocs.io/) generates additional rescoring
+features by comparing observed fragment ion spectra and retention times to those
+predicted by deep-learning models served via [Koina](https://koina.wilhelmlab.org/).
+The augmented feature set is then passed to Percolator for final scoring, similarly to
+MS2Rescore above.
+
+The intensity and retention time (iRT) prediction models are controlled by
+`--oktoberfest_intensity_model` (default: `Prosit_2020_intensity_HCD`) and
+`--oktoberfest_irt_model` (default: `Prosit_2019_irt`); see the
+[Koina model list](https://koina.wilhelmlab.org/docs) for available models. The Koina
+server used for predictions defaults to `koina.wilhelmlab.org:443` and can be pointed
+at a different instance (e.g. a self-hosted one) by overriding `ext.prediction_server`
+for `OKTOBERFEST_RUNOKTOBERFEST` in a custom config file - see
+[Custom Tool Arguments](usage.md#custom-tool-arguments).
 
 ---
 

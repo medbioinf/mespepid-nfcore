@@ -1,0 +1,150 @@
+// nf-core modules test tdf2mzml
+nextflow_process {
+
+    name "Test Process OKTOBERFEST_RUNOKTOBERFEST"
+    script "../main.nf"
+    process "OKTOBERFEST_RUNOKTOBERFEST"
+
+    tag "modules"
+    tag "modules_local"
+    tag "oktoberfest"
+    tag "oktoberfest/runoktoberfest"
+    tag "comet"
+    tag "openms/decoydatabase"
+    tag "psmutilsconversions"
+
+    setup {
+        run("OPENMS_DECOYDATABASE") {
+            script "../../../../nf-core/openms/decoydatabase/main.nf"
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test_db' ],
+                    file(params.modules_testdata_base_path + 'proteomics/database/yeast_UPS.fasta', checkIfExists: true),
+                ])
+                """
+            }
+        }
+
+        run("COMET") {
+            script "../../../../nf-core/comet/main.nf"
+
+            process {
+                """
+                def originalParams = file(params.modules_testdata_base_path + 'proteomics/parameter/OVEMB150205.comet.params', checkIfExists: true)
+                def modifiedParams = new File('./modified.comet.params')
+                modifiedParams.text = originalParams.text
+                    .replaceAll('(?m)^output_percolatorfile =.*', 'output_percolatorfile = 0')
+                    .replaceAll('(?m)^output_txtfile =.*', 'output_txtfile = 0')
+                    .replaceAll('(?m)^output_mzidentmlfile =.*', 'output_mzidentmlfile = 1')
+
+                input[0] = OPENMS_DECOYDATABASE.out.decoy_fasta.map { meta, fasta ->
+                    [
+                        [ id:'test'],
+                        file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.mzML', checkIfExists: true),
+                        fasta,
+                        file(modifiedParams),
+                    ]
+                }
+                """
+            }
+        }
+
+        run("PSMUTILSCONVERSIONS") {
+            script "../../../psmutilsconversions/main.nf"
+
+            process {
+                """
+                input[0] = COMET.out.mzid.map { meta, mzid ->
+                    [meta + [searchengine: 'comet', idfile_type: 'mzid'], mzid]
+                }
+                """
+            }
+        }
+    }
+
+    test("oktoberfest - OVEMB150205_12") {
+        when {
+            process {
+                """
+                input[0] = PSMUTILSCONVERSIONS.out.psm_utils_tsv
+                    .map { _meta, psmutils_tsv ->
+                        [
+                            [
+                                id: 'test',
+                                searchengine: 'comet',
+                                idfile_type: 'mzid',
+                                spectrum_id_pattern: '.*scan=(\\\\d+)\$',
+                                scan_id_pattern: '^(?P<scan_id>\\\\d+)\$'
+                            ],
+                            file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.mzML', checkIfExists: true),
+                            file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.raw', checkIfExists: true),
+                            psmutils_tsv
+                        ]
+                    }
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                {
+                    def lines = path(process.out.pin[0][1]).readLines()
+                    def header = lines[0]
+                    // sort by column 3 (scannr)
+                    def sortedRows = lines.tail().sort { it.split('\t')[2].toInteger() }
+                    // Round decimal fields to 4 places to tolerate minor float drift;
+                    // leave integer-valued fields (no '.') untouched.
+                    def roundedRows = sortedRows.collect { row ->
+                        row.split('\t').collect { field ->
+                            (field.contains('.') && field.isDouble())
+                                ? String.format("%.4f", field.toDouble())
+                                : field
+                        }.join('\t')
+                    }
+                    snapshot(header, roundedRows).match("pin_content")
+                }
+            )
+        }
+    }
+
+    test("oktoberfest - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                ch_prepared_spectra_by_id = channel.of([
+                    [ id:'test'],
+                    file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.mzML', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'proteomics/msspectra/OVEMB150205_12.raw', checkIfExists: true)
+                ])
+
+                ch_psmutils_tsvs_by_id = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, psmutils_tsv -> [meta.id, meta, psmutils_tsv] }
+
+                input[0] = ch_prepared_spectra_by_id
+                    .combine(ch_psmutils_tsvs_by_id, by: 0)
+                    .map { _id, spectra_meta, mzml, raw_spectra, psm_meta, psmutils_tsv ->
+                        [spectra_meta + psm_meta + [
+                                outdir: "comet/oktoberfest",
+                                oktoberfest_intensity_model: "Prosit_2020_intensity_HCD",
+                                oktoberfest_irt_model: "Prosit_2019_irt",
+                                fragment_tol_da: 0.2
+                        ],
+                        mzml, raw_spectra, psmutils_tsv]
+                    }
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+
+}

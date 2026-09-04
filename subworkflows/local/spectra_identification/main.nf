@@ -7,8 +7,8 @@ include { PSMUTILSCONVERSIONS } from '../../../modules/local/psmutilsconversions
 
 workflow SPECTRA_IDENTIFICATION {
     take:
-    ch_spectra_files    // val(meta), path(mzml), path(raw_spectra)
-    ch_fasta_db         // channel: [sample_id, db_fasta] one item per sample
+    ch_spectra_files // val(meta), path(mzml), path(raw_spectra)
+    ch_fasta_db // channel: [sample_id, db_fasta] one item per sample
     precursor_tol_ppm
     fragment_tol_da
     run_comet
@@ -49,13 +49,16 @@ workflow SPECTRA_IDENTIFICATION {
         COMET(
             ch_comet_in
         )
-        ch_versions = ch_versions.mix(COMET.out.versions_comet)
+        // versions are topic-style, already collected globally - do not mix into ch_versions
         ch_identifications = ch_identifications.mix(
             COMET.out.mzid.map { meta, mzid ->
-                def spectrumPattern = meta.vendor.toString() == 'bruker'
-                    ? '.*index=(\\d+)$'
-                    : '.*scan=(\\d+)$'
-                [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: spectrumPattern], mzid]
+                def spectrumPattern = meta.vendor == 'bruker'
+                    ? '.*index=(\\d+)(?!\\d).*$'
+                    : '.*scan=(\\d+)(?!\\d).*$'
+
+                def scanIdPattern = '^(?P<scan_id>\\d+)(?!\\d).*$'
+
+                [meta + [searchengine: 'comet', idfile_type: 'mzid', spectrum_id_pattern: spectrumPattern, scan_id_pattern: scanIdPattern], mzid]
             }
         )
     }
@@ -70,27 +73,34 @@ workflow SPECTRA_IDENTIFICATION {
             precursor_tol_ppm,
             fragment_tol_da,
         )
-        ch_versions = ch_versions.mix(SAGECONFIG.out.versions_python)
+        // versions are topic-style, already collected globally - do not mix into ch_versions
 
         ch_sage_config = SAGECONFIG.out.config.map { config -> [['ID': 'SAGE_CONFIG'], config] }.first()
 
         // Re-use ch_ident_in (already joined with per-run fasta) and split into
         // the two separate channels SAGEBETA requires.
-        ch_sage_joined = ch_ident_in
-            .multiMap { meta, mzml, _raw, fasta ->
-                spectra: [meta, mzml]
-                fasta:   [[id: fasta.getBaseName()], fasta]
-            }
+        ch_sage_joined = ch_ident_in.multiMap { meta, mzml, _raw, fasta ->
+            spectra: [meta, mzml]
+            fasta: [[id: fasta.getBaseName()], fasta]
+        }
 
         SAGEBETA(
             ch_sage_joined.spectra,
             ch_sage_joined.fasta,
             ch_sage_config,
         )
-        ch_versions = ch_versions.mix(SAGEBETA.out.versions_sagebeta)
+        // versions are topic-style, already collected globally - do not mix into ch_versions
         ch_identifications = ch_identifications.mix(
             SAGEBETA.out.tsv.map { meta, tsv ->
-                [meta + [searchengine: 'sage', idfile_type: 'sage_tsv', spectrum_id_pattern: '(.*)'], tsv]
+                def spectrumPattern = meta.vendor == 'bruker'
+                    ? '(.*)'
+                    : '(.*)'
+
+                def scanIdPattern = meta.vendor == 'bruker'
+                    ? '.*index=(?P<scan_id>\\d+)(?!\\d).*$'
+                    : '.*scan=(?P<scan_id>\\d+)(?!\\d).*$'
+
+                [meta + [searchengine: 'sage', idfile_type: 'sage_tsv', spectrum_id_pattern: spectrumPattern, scan_id_pattern: scanIdPattern], tsv]
             }
         )
     }
@@ -99,8 +109,7 @@ workflow SPECTRA_IDENTIFICATION {
     PSMUTILSCONVERSIONS(
         ch_identifications
     )
-    ch_versions = ch_versions.mix(PSMUTILSCONVERSIONS.out.versions_psm_utils)
-    ch_versions = ch_versions.mix(PSMUTILSCONVERSIONS.out.versions_python)
+    // versions are topic-style, already collected globally - do not mix into ch_versions
 
     ch_psmutils_tsvs = PSMUTILSCONVERSIONS.out.psm_utils_tsv.map { meta, file -> [meta + [status: 'psmutils'], file] }
     ch_searchengine_pins = PSMUTILSCONVERSIONS.out.pin.map { meta, file -> [meta + [status: 'pin'], file] }

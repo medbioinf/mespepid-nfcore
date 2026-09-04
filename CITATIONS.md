@@ -10,6 +10,9 @@
 
 ## Pipeline tools
 
+- [Oktoberfest](https://pubmed.ncbi.nlm.nih.gov/37672792/)
+  > Picciani M, Gabriel W, Giurcoiu VG, Shouman O, Hamood F, Lautenbacher L, Jensen CB, Müller J, Kalhor M, Soleymaniniya A, Kuster B, The M, Wilhelm M. Oktoberfest: Open-source spectral library generation and rescoring pipeline based on Prosit. Proteomics. 2024 Apr;24(8):e2300112. doi: 10.1002/pmic.202300112. Epub 2023 Sep 6. PMID: 37672792.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

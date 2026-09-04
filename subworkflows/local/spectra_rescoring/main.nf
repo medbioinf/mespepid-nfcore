@@ -1,6 +1,7 @@
-include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR } from '../../../modules/nf-core/percolator/main'
+include { PERCOLATOR ; PERCOLATOR as MS2RESCORE_PERCOLATOR ; PERCOLATOR as OKTOBERFEST_PERCOLATOR } from '../../../modules/nf-core/percolator/main'
 include { MS2RESCORE_GETMODEL } from '../../../modules/local/ms2rescore/getmodel/main'
 include { MS2RESCORE_RUNMS2RESCORE } from '../../../modules/local/ms2rescore/runms2rescore/main'
+include { OKTOBERFEST_RUNOKTOBERFEST } from '../../../modules/local/oktoberfest/runoktoberfest/main'
 
 workflow SPECTRA_RESCORING {
     take:
@@ -8,10 +9,13 @@ workflow SPECTRA_RESCORING {
     searchengine_pins
     prepared_spectra
     fragment_tol_da
-    run_percolator // boolean: whether to run Percolator for rescoring
-    run_ms2rescore // boolean: whether to run MS2Rescore for rescoring
-    ms2rescore_model // string: which MS2Rescore model to use
-    ms2rescore_model_dir // string: optional directory containing pre-downloaded MS2PIP models
+    run_percolator              // boolean: whether to run Percolator for rescoring
+    run_ms2rescore              // boolean: whether to run MS2Rescore for rescoring
+    run_oktoberfest             // boolean: whether to run Oktoberfest for rescoring
+    ms2rescore_model            // string: which MS2Rescore model to use
+    ms2rescore_model_dir        // string: optional directory containing pre-downloaded MS2PIP models
+    oktoberfest_intensity_model // string: which Koina intensity model to use for Oktoberfest
+    oktoberfest_irt_model       // string: which Koina iRT model to use for Oktoberfest
 
     main:
     ch_versions = channel.empty()
@@ -44,7 +48,7 @@ workflow SPECTRA_RESCORING {
         // TODO: allow models per sample (and download multiple models if needed)
         if (!ms2rescore_model_dir) {
             MS2RESCORE_GETMODEL(ms2rescore_model)
-            ms2rescore_model_dir_val =  MS2RESCORE_GETMODEL.out.model_dir
+            ms2rescore_model_dir_val = MS2RESCORE_GETMODEL.out.model_dir
         }
         else {
             ms2rescore_model_dir_val = channel.value(file(ms2rescore_model_dir, checkIfExists: true))
@@ -52,8 +56,13 @@ workflow SPECTRA_RESCORING {
 
         // TODO: make the setting of the model and fragment_tolerance per sample, not hardcoded for all runs
         ch_ms2rescore_in = ch_rescoring_in.map { meta, mzml, raw_spectra, psmutils_tsv ->
-            [meta + [outdir: meta.searchengine + "/ms2rescore", ms2pip_model: ms2rescore_model, fragment_tol_da: fragment_tol_da], mzml, raw_spectra, psmutils_tsv]
+            [meta + [
+                outdir: meta.searchengine + "/ms2rescore",
+                ms2pip_model: ms2rescore_model,
+                fragment_tol_da: fragment_tol_da
+            ], mzml, raw_spectra == mzml ? [] : raw_spectra, psmutils_tsv]
         }
+
         MS2RESCORE_RUNMS2RESCORE(
             ch_ms2rescore_in,
             ms2rescore_model_dir_val,
@@ -69,6 +78,35 @@ workflow SPECTRA_RESCORING {
         ch_rescoring_out = ch_rescoring_out
             .mix(MS2RESCORE_PERCOLATOR.out.target_psms.map { meta, file -> [meta + [status: 'ms2rescore_target'], file] })
             .mix(MS2RESCORE_PERCOLATOR.out.decoy_psms.map { meta, file -> [meta + [status: 'ms2rescore_decoy'], file] })
+    }
+
+    // run Oktoberfest, if enabled
+    if (run_oktoberfest) {
+
+        ch_oktoberfest_in = ch_rescoring_in.map { meta, mzml, raw_spectra, psmutils_tsv ->
+            [meta + [
+                outdir: meta.searchengine + "/oktoberfest",
+                oktoberfest_intensity_model: oktoberfest_intensity_model,
+                oktoberfest_irt_model: oktoberfest_irt_model,
+                mass_tolerance: fragment_tol_da,
+                mass_tolerance_unit: "da",
+            ], mzml, raw_spectra == mzml ? [] : raw_spectra, psmutils_tsv]
+        }
+
+        OKTOBERFEST_RUNOKTOBERFEST(
+            ch_oktoberfest_in
+        )
+        ch_versions = ch_versions.mix(OKTOBERFEST_RUNOKTOBERFEST.out.versions)
+
+        ch_percolator_oktoberfest_in = OKTOBERFEST_RUNOKTOBERFEST.out.pin.map { meta, pin ->
+            [meta + [status: 'oktoberfest', outdir: meta.searchengine + "/oktoberfest"], pin]
+        }
+        OKTOBERFEST_PERCOLATOR(
+            ch_percolator_oktoberfest_in
+        )
+        ch_rescoring_out = ch_rescoring_out
+            .mix(OKTOBERFEST_PERCOLATOR.out.target_psms.map { meta, file -> [meta + [status: 'oktoberfest_target'], file] })
+            .mix(OKTOBERFEST_PERCOLATOR.out.decoy_psms.map { meta, file -> [meta + [status: 'oktoberfest_decoy'], file] })
     }
 
     emit:

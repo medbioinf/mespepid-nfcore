@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "adjustmzml"
+description: On demand, append a "scan=" native ID alongside Bruker TDF's "index="-only
+  native ID (meta.needs_native_id_fix), and/or decompress the binary data arrays
+  (meta.uncompress), by re-serializing the mzML through msconvert. Both fixes are
+  optional per-sample and no-ops when neither flag is set on meta.
+keywords:
+  - proteomics
+  - mzml
+  - bruker
+tools:
+  - "msconvert":
+      description: "Part of ProteoWizard; converts and manipulates mass spectrometry
+        data formats."
+      homepage: "https://proteowizard.sourceforge.io/"
+      documentation: "https://proteowizard.sourceforge.io/tools/msconvert.html"
+      tool_dev_url: "https://github.com/ProteoWizard/pwiz"
+      doi: "10.1038/nbt.2377"
+      licence: ["Apache-2.0"]
+      identifier: null
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information, plus two optional flags this
+          module reads:
+          e.g. `[ id:'sample1', needs_native_id_fix:true, uncompress:false ]`
+          - `needs_native_id_fix` (boolean, default false): append a "scan=" native
+            ID alongside "index=" (e.g. needed by Oktoberfest/MSAmanda). Only
+            relevant for Bruker TDF-converted mzML, which lacks "scan=" natively.
+          - `uncompress` (boolean, default false): decompress the binary data
+            arrays with `--zlib=off` (e.g. needed by X!Tandem).
+    - mzml:
+        type: file
+        description: mzML file, from any vendor/converter
+        pattern: "*.{mzml,mzML}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3244"
+
+output:
+  mzml:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "reindexed/*.mzML":
+          type: file
+          description: mzML file, with the "scan=" native ID appended and/or binary
+            data arrays decompressed if requested via meta; otherwise unchanged
+            content, just re-serialized (and re-indexed) through msconvert
+          pattern: "reindexed/*.mzML"
+          ontologies:
+            - edam: "http://edamontology.org/format_3244"
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - proteowizard:
+          type: string
+          description: The name of the tool
+      - "wine msconvert --help | grep 'ProteoWizard release:'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+authors:
+  - "@julianu"
+maintainers:
+  - "@julianu"

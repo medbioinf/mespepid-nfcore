@@ -1,4 +1,6 @@
+include { ADJUSTMZML } from '../../../modules/local/adjustmzml/main'
 include { GUNZIP } from '../../../modules/nf-core/gunzip/main'
+include { PUBLISHMZML } from '../../../modules/local/publishmzml/main'
 include { TDF2MZML } from '../../../modules/local/tdf2mzml/main'
 include { THERMORAWFILEPARSER } from '../../../modules/nf-core/thermorawfileparser/main'
 include { UNTAR } from '../../../modules/nf-core/untar/main'
@@ -6,7 +8,11 @@ include { UNZIP } from '../../../modules/nf-core/unzip/main'
 
 workflow PREPARE_SPECTRA {
     take:
-    ch_spectra // channel: [ val(meta), [ .d-folder | .raw | .mzml ] ]
+    ch_spectra           // channel: [ val(meta), [ .d-folder | .raw | .mzml ] ]
+    needs_native_id_fix  // boolean: whether to append "scan="" native IDs to mzML (not by default
+                         // in Bruker data, but needed by some tools like Oktoberfst and MS Amanda)
+    needs_uncompression  // boolean: whether to decompress mzML's binary data arrays (needed by
+                         // some search engines, e.g. X!Tandem)
 
     main:
 
@@ -59,12 +65,16 @@ workflow PREPARE_SPECTRA {
 
     ch_versions = channel.empty()
 
+    // sorted longest-first known file extensions
+    def KNOWN_EXTENSIONS_LONGEST_FIRST = (EXTENSION_TO_VENDOR_MAP.keySet() as List).sort { -it.length() }
+
     // add the vendor information to the metadata based on the file extension, if the extension is unknown assign VENDOR_UNKNOWN
     ch_spectra = ch_spectra.map { meta, path ->
-        def path_split = path.name.toLowerCase().tokenize('.')
-        def full_extension = "." + path_split[1..-1].join('.')
-        meta.vendor = EXTENSION_TO_VENDOR_MAP[full_extension] ? EXTENSION_TO_VENDOR_MAP[full_extension] : VENDOR_UNKNOWN
-        meta.compression = EXTENSION_TO_COMPRESSION_MAP[full_extension] ? EXTENSION_TO_COMPRESSION_MAP[full_extension] : COMPRESSION_UNSUPPORTED
+        def filename = path.name.toLowerCase()
+        // match against the known extensions allowing multiple dots in the base name
+        def full_extension = KNOWN_EXTENSIONS_LONGEST_FIRST.find { filename.endsWith(it) }
+        meta.vendor = full_extension ? EXTENSION_TO_VENDOR_MAP[full_extension] : VENDOR_UNKNOWN
+        meta.compression = full_extension ? EXTENSION_TO_COMPRESSION_MAP[full_extension] : COMPRESSION_UNSUPPORTED
         return [meta, path]
     }
 
@@ -87,12 +97,12 @@ workflow PREPARE_SPECTRA {
 
     // Uncompress the spectra files
     GUNZIP(ch_branched_spectra.gzipped)
-    ch_versions = ch_versions.mix(GUNZIP.out.versions_gunzip)
+    // versions are topic-style, already collected globally - do not mix into ch_versions
     ch_gunzipped_spectra = GUNZIP.out.gunzip.map { meta, path -> path.isFile() ? [meta, path] : [meta, path.listFiles().first()] }
     ch_uncompressed_spectra = ch_uncompressed_spectra.mix(ch_gunzipped_spectra)
 
     UNTAR(ch_branched_spectra.tarred)
-    ch_versions = ch_versions.mix(UNTAR.out.versions_untar)
+    // versions are topic-style, already collected globally - do not mix into ch_versions
     ch_untarred_spectra = UNTAR.out.untar.map { meta, path -> path.isFile() || meta.vendor == VENDOR_BRUKER ? [meta, path] : [meta, path.listFiles().first()] }
     ch_uncompressed_spectra = ch_uncompressed_spectra.mix(ch_untarred_spectra)
 
@@ -119,12 +129,35 @@ workflow PREPARE_SPECTRA {
     ch_mzmls = ch_branched_uncompressed_spectra.mzml
 
     TDF2MZML(ch_branched_uncompressed_spectra.brukerd)
-    ch_versions = ch_versions.mix(TDF2MZML.out.versions_tdf2mzml)
+    // versions are topic-style, already collected globally - do not mix into ch_versions
     ch_mzmls = ch_mzmls.mix(TDF2MZML.out.spectra)
 
     THERMORAWFILEPARSER(ch_branched_uncompressed_spectra.thermoraw)
-    ch_versions = ch_versions.mix(THERMORAWFILEPARSER.out.versions_thermorawfileparser)
+    // versions are topic-style, already collected globally - do not mix into ch_versions
     ch_mzmls = ch_mzmls.mix(THERMORAWFILEPARSER.out.spectra)
+
+    // adjust some mzML internals if necessary
+    if (needs_native_id_fix || needs_uncompression) {
+        // only Bruker files need the native ID fix; but if uncompression is requested,
+        // every file needs reprocessing regardless of vendor
+        ch_mzmls
+            .branch { meta, _mzml ->
+                needs_adjust: needs_uncompression || (meta.vendor == VENDOR_BRUKER && needs_native_id_fix)
+                as_is: true
+            }
+            .set { ch_branched_mzmls }
+
+        ADJUSTMZML(ch_branched_mzmls.needs_adjust.map { meta, mzml -> [meta + [
+            needs_native_id_fix: (meta.vendor == VENDOR_BRUKER && needs_native_id_fix),
+            uncompress: needs_uncompression], mzml] })
+        // versions are topic-style, already collected globally - do not mix into ch_versions
+
+        ch_mzmls = ch_branched_mzmls.as_is.mix(ADJUSTMZML.out.mzml)
+    }
+
+    // publish only the final, prepared mzML - not each intermediate conversion step
+    PUBLISHMZML(ch_mzmls)
+    ch_mzmls = PUBLISHMZML.out.mzml
 
     emit:
     versions = ch_versions
